@@ -64,9 +64,15 @@ test('init: existing convention edits and ignore rules -> preserves both without
   const directory = join(root, '.askill/convention');
   const path = join(directory, 'projects/frontend.md');
   assert.deepEqual(readdirSync(join(directory, 'projects')), ['frontend.md']);
-  assert.deepEqual(readdirSync(join(directory, 'languages')), ['typescript.md']);
-  assert.deepEqual(readdirSync(join(directory, 'testing')), ['typescript.md']);
-  assert.deepEqual(readdirSync(join(directory, 'frameworks')), ['react.md']);
+  assert.deepEqual(readdirSync(join(directory, 'languages')), ['typescript']);
+  assert.deepEqual(readdirSync(join(directory, 'frameworks')), ['react']);
+  const router = join(directory, 'languages/typescript/README.md');
+  const topic = readdirSync(join(directory, 'languages/typescript')).find((p) => p.endsWith('.md') && p !== 'README.md');
+  const detail = join(directory, 'languages/typescript', topic);
+  writeFileSync(detail, '# Team-specific detail\n');
+  rmSync(router);
+  const customRoot = join(directory, 'README.md');
+  writeFileSync(customRoot, '# Our original index\n');
   writeFileSync(path, '# Team frontend rules\n');
   const exclude = join(root, '.git/info/exclude');
   writeFileSync(exclude, '/user-only/\n');
@@ -76,6 +82,10 @@ test('init: existing convention edits and ignore rules -> preserves both without
   call('init', {});
 
   assert.equal(readFileSync(path, 'utf8'), '# Team frontend rules\n');
+  assert.equal(readFileSync(detail, 'utf8'), '# Team-specific detail\n');
+  assert.equal(readFileSync(customRoot, 'utf8'), '# Our original index\n');
+  assert.ok(readFileSync(router, 'utf8').includes(topic));
+  assert.ok(readFileSync(join(directory, 'rulebooks.md'), 'utf8').includes('languages/typescript/README.md'));
   assert.match(git(root, ['ls-files', '--others', '--exclude-standard']), /^\.askill\/convention\/projects\/frontend\.md$/mu);
   assert.equal(readFileSync(exclude, 'utf8'), '/user-only/\n');
   assert.equal(readFileSync(gitignore, 'utf8'), '/team-only/\n');
@@ -89,8 +99,9 @@ function binding(plan) {
 test('init: framework and language profile without project type -> selects only matching guides', (t) => {
   const { root } = fixture(t, { frameworks: ['fastapi'], languages: ['python'] });
   const directory = join(root, '.askill/convention');
-  assert.deepEqual(readdirSync(join(directory, 'frameworks')), ['fastapi.md']);
-  assert.deepEqual(readdirSync(join(directory, 'testing')), ['python.md']);
+  assert.deepEqual(readdirSync(join(directory, 'frameworks')), ['fastapi']);
+  assert.deepEqual(readdirSync(join(directory, 'languages')), ['python']);
+  assert.ok(readdirSync(join(directory, 'languages/python')).some((p) => p.includes('test')));
   assert.ok(!readdirSync(directory).includes('projects'));
 });
 

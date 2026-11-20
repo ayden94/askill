@@ -12,3 +12,5 @@ If `plan.convention` exists, read the index at the base commit and select only t
 Specify the goal, scope, invariants, non-goals, expected paths, and the method and expected result for each acceptance criterion. Resolve outstanding product decisions and guarantees. Missing project documentation alone is not a blocker.
 
 Bind the approved contract to the issue and base commit. Reopen preflight if the requirement changes or a fix falls outside scope. Do not modify code or grant permissions.
+
+When the base includes `.askill/convention/rulebooks.md`, read it alongside the project index. Follow the selected stack router to the relevant topic files; record those leaf paths, not just the directory or its README. A custom project rule remains authoritative over an illustrative starter example. Do not load every rulebook for every change.

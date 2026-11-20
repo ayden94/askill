@@ -27,3 +27,5 @@ A local lane can finish at the verified commit. Remote publication requires sepa
 askill stores configuration, conventions, lane plans, and evidence under `.askill/`. Initialization seeds shared rules plus only the selected framework and language guides. Each language has its own testing guide: a Python API using FastAPI does not get frontend or JavaScript rules. Edit `.askill/convention/` and commit the rules you want implementers and reviewers to share. Initialization preserves existing edits and leaves your Git ignore rules alone.
 
 [Workflow and state layout](docs/workflow.md) · [Local example](examples/local/)
+
+For each selected language or framework, `init` installs a folder with a task index and topic guides. Start from `.askill/convention/rulebooks.md`, open the relevant stack index, and read only the topics needed for the change. Existing files, including customized flat guides and indexes, are never replaced.
