@@ -5,6 +5,6 @@ description: Publish the reviewed head to an authorized PR or MR destination wit
 
 # Publish one reviewed head
 
-설정된 목적지, 원격 쓰기 권한, 현재 head의 필수 검증 결과를 다시 확인한다. 이슈에 연결된 기존 PR/MR을 찾아 재개 시 중복 생성하지 않는다. push와 PR/MR 생성은 권한 범위 내에서만 수행하고 실제 원격 head와 ID를 다시 조회한다.
+Recheck the configured destination, remote write grants, and required verdicts for the current head. Look for an existing PR/MR linked to the issue before creating one. Push and create a PR/MR only within their respective grants, then read back the actual remote head and ID.
 
-PR 목적지가 없는 로컬 프로젝트는 로컬 판정을 결과로 남긴다. 공개 승인, CI 통과, 머지, cleanup은 서로 별개다.
+If no PR destination is configured, report the local verdict. Authorization to publish, passing CI, merging, and cleanup are separate decisions.

@@ -1,55 +1,33 @@
 # askill
 
-이슈 하나 또는 여러 개를 **lane**으로 묶어 구현하고, 같은 커밋을 기준으로 검증하는 CLI와 에이전트 스킬이에요. 특정 에이전트 호스트나 GitHub에 묶이지 않아서 로컬 Git 저장소만으로도 시작할 수 있어요.
+askill helps coding agents take an issue from an agreed scope to a reviewed commit. Group related issues into a **lane**: each issue gets its own implementation contract and worktree, and the lane keeps enough state to resume in a new session.
 
-```text
-최초 1회: 프로젝트 설정
-lane마다: 범위 합의 → 이슈 등록 → lane 생성
-  → 이슈별 preflight → 구현 → 3축 리뷰 → 필요 시 PR/MR → lane 회고
-```
+## Install once
 
-## 전역 설치
-
-Node.js 22 이상과 Git이 필요해요. 비공개 저장소에 접근할 수 있는 GitHub 인증을 먼저 준비하고, 사용하는 에이전트를 선택해 스킬 전체를 한 번 전역 설치하세요.
+You need Node.js 22 or later, Git, and GitHub credentials with access to this private repository. Install the full skill set globally and select your agent when prompted:
 
 ```bash
 npx skills@latest add ayden94/askill --global --skill '*'
 ```
 
-## 프로젝트에서 시작하기
+The `askill-init` skill includes the CLI and templates. You do not need to clone askill or install an npm package in your project.
 
-1. 대상 Git 프로젝트에서 에이전트에 **“`askill-init`으로 이 프로젝트 초기화해줘”**라고 요청하세요. 이슈·PR/MR·티켓 목적지를 설정하고, 편집 가능한 컨벤션 초안을 생성해요. 원격 서비스 없이 로컬로만 시작해도 돼요.
-2. 같은 프로젝트의 다음 작업부터는 **“`askill`로 이 작업을 시작해줘”**라고 요청하세요. 설정은 다시 하지 않고 범위 합의부터 시작해요.
+## Start in a project
 
-CLI와 템플릿은 `askill-init` 스킬에 들어 있어요. 대상 프로젝트에 askill 소스, npm 패키지, 전역 `askill` 실행 파일을 따로 설치할 필요가 없어요. 호스트는 `plan`의 작업을 배정하고, CLI는 `record`로 받은 결과가 계약과 현재 커밋에 맞는지 검사해요. 명령별 입력은 [CLI 가이드](docs/cli.md)에 있어요.
+1. **Once per Git repository:** ask your agent, “Use `askill-init` to set up this project.” Choose where issues, pull or merge requests, and tickets belong. Local-only work is supported.
+2. **For each new task:** ask, for example, “Use `askill` to prevent duplicate saves.” Agree on the scope, register or link issues, and group them into a lane.
+3. **To resume:** ask the agent to continue the existing lane. It checks Git and the configured provider before choosing the next action.
 
-## 프로젝트에 저장되는 파일
+## What counts as done?
 
-```text
-.askill/
-├── config.json               # 이슈·PR/MR·티켓 목적지와 프로젝트 정책
-├── convention/               # 편집 가능한 공통·프론트엔드·백엔드·테스트 규칙
-├── intakes/                  # 범위 합의와 이슈 초안
-├── issues/                   # 확인된 이슈 목록
-├── lanes/<lane-id>/
-│   ├── plan.json             # 이슈 구성·의존성·실행 권한
-│   ├── state.json            # 실행 상태·재시도·검증 기록 참조
-│   ├── retro-notes.json      # 작업 중 남긴 후속 후보
-│   └── retro.json            # lane 종료 후 저장한 회고와 추천
-└── work/                     # 이슈별 계약과 검증 근거
-```
+Before implementation, **preflight** records what must change, what must stay the same, and how to check both. Three independent reviewers then assess the **contract**, **code quality**, and **verification evidence** against the same commit. A fix produces a new head and requires fresh review. Open Code Review (`ocr`) is an optional extra, not a substitute for any reviewer.
 
-`init`은 빠진 컨벤션 초안만 만들고 기존 편집을 덮어쓰지 않아요. 편집한 규칙을 기준 브랜치에 커밋하면 구현자와 리뷰어가 같은 버전을 읽어요. **Git에 포함할지는 사용자가 결정해요.** askill은 `.gitignore`나 `info/exclude`를 자동으로 바꾸지 않아요. 설정과 실행 기록을 공유하기 전에는 민감한 정보가 없는지 확인하세요.
+A local lane can finish at the verified commit. Remote publication requires separate permission. Once all issues finish, one retrospective recommends follow-up work without opening issues or changing project rules.
 
-이전 레이아웃에서 만든 lane은 `import-lane`을 다시 실행하면 기존 상태를 보존한 채 새 폴더로 가져와요. 기존 파일은 자동으로 삭제하지 않아요.
+## Project files
 
-## 어떻게 검증하나요?
+askill stores configuration, conventions, lane plans, and evidence under `.askill/`. Edit the starter rules in `.askill/convention/` and commit the ones you want implementers and reviewers to share. Initialization preserves existing edits and leaves your Git ignore rules alone.
 
-- **Preflight:** 무엇을 바꾸고 유지할지, 무엇을 관찰해야 완료인지 합의해요. 프로젝트 문서가 없는 경우에도 시작할 수 있어요.
-- **3축 리뷰:** 독립 리뷰어가 같은 커밋에서 계약 충족, 코드 품질과 컨벤션 준수, 검증 근거를 확인해요. 수정해서 커밋이 바뀌면 이전 판정을 재사용하지 않아요.
-- **선택 도구:** Open Code Review(`ocr`)는 설치되어 있고 diff 전송 권한이 있을 때만 추가로 실행해요. 원격 이슈나 PR/MR이 필요할 때만 `gh` 또는 `glab`을 사용해요. 머지와 정리는 호스트가 별도 권한으로 처리하고, 티켓은 목적지만 설정해요.
-- **Lane 회고:** 모든 이슈가 끝나면 한 번만 진행해요. 범위 밖 문제는 후속 이슈로, 반복해서 막힌 검증은 테스트·컨벤션 개선으로 추천할 수 있어요. 실제 등록이나 규칙 수정은 별도 요청이 있을 때만 해요.
+[CLI reference](skills/askill-init/references/cli.md) · [Workflow and state layout](docs/workflow.md) · [Local example](examples/local/) · [Fluo port notes](docs/fluo-port.md)
 
-[워크플로 계약](docs/workflow.md) · [Fluo에서 가져온 구조](docs/fluo-port.md) · [로컬 예시](examples/local/)
-
-개발 검증: `node --test`
+To run the test suite from the askill repository: `node --test`.
