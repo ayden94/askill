@@ -15,5 +15,6 @@ Check the installed Nest packages and HTTP adapter, TypeScript decorator configu
 | Change list queries, pagination, ORM behavior, or schema compatibility | [Queries and migrations](query-and-migrations.md) |
 | Change job delivery, consumer retries, or worker shutdown | [Queues and workers](queues-and-workers.md) |
 | Change a GraphQL resolver, schema field, or batch loader | [GraphQL resolvers](graphql-resolvers.md) |
+| Call an external service or change its timeout, cancellation, or retry behavior | [Outbound HTTP dependencies](outbound-http.md) |
 
 Installation makes all topics available; it does not make them all applicable. For a DTO-only change, read validation and serialization, plus HTTP testing if the wire behavior changes. Do not read queue or GraphQL guidance merely because its package is installed.

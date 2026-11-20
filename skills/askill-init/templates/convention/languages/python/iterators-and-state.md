@@ -50,3 +50,21 @@ An empty iterator still returns the seed's counts in a new object. A failure mid
 ## Verification
 
 Summarize a generator producing `"a", "b", "a"` with seed `{"a": 4}`, then summarize fresh empty input twice without a seed and mutate one result. **Pass:** the first result is `(3, Counter({"a": 6, "b": 1}))`, the seed is unchanged, and the unseeded results share no state.
+
+## Compatibility: pairing two finite sequences without losing a row
+
+Use this rule only when the contract requires equal lengths. For two ordinary, stable sequences, choose by the minimum supported runtime, not by the developer workstation. The source for the cutoff is [PEP 618](https://peps.python.org/pep-0618/).
+
+```python
+# Minimum Python >= 3.10
+pairs = list(zip(names, values, strict=True))
+```
+
+```python
+# Supporting Python 3 versions below 3.10 as well
+if len(names) != len(values):
+    raise ValueError("names and values must have equal lengths")
+pairs = list(zip(names, values))
+```
+
+Do not use the length check for one-shot iterators: they need a streaming mismatch check or a different input contract. For either sequence implementation, verify matching inputs keep order, two empty inputs succeed, and unequal lengths raise with either side shorter. If one portable implementation meets the entire support range, a runtime version switch is unnecessary.
