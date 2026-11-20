@@ -9,7 +9,7 @@ import { git } from '../skills/askill-init/scripts/store.mjs';
 
 const cli = fileURLToPath(new URL('../skills/askill-init/scripts/cli.mjs', import.meta.url));
 
-function fixture(t) {
+function fixture(t, profile) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), 'askill-workflow-')));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   git(root, ['init', '-b', 'main']);
@@ -31,6 +31,7 @@ function fixture(t) {
   call('init', {
     version: 1,
     base_branch: 'main',
+    ...(profile && { convention_profile: profile }),
     destinations: { issues: { provider: 'local' }, pull_requests: null, tickets: null },
   });
   return { root, call, invoke };
@@ -59,10 +60,13 @@ test('local intake: retry after issue registration -> resumes with the same cano
 });
 
 test('init: existing convention edits and ignore rules -> preserves both without adding exclusions', (t) => {
-  const { root, call } = fixture(t);
+  const { root, call } = fixture(t, { project_types: ['frontend'], languages: ['typescript'], frameworks: ['react'] });
   const directory = join(root, '.askill/convention');
-  const path = join(directory, 'frontend.md');
-  assert.deepEqual(readdirSync(directory).sort(), ['README.md', 'backend.md', 'common.md', 'frontend.md', 'testing.md']);
+  const path = join(directory, 'projects/frontend.md');
+  assert.deepEqual(readdirSync(join(directory, 'projects')), ['frontend.md']);
+  assert.deepEqual(readdirSync(join(directory, 'languages')), ['typescript.md']);
+  assert.deepEqual(readdirSync(join(directory, 'testing')), ['typescript.md']);
+  assert.deepEqual(readdirSync(join(directory, 'frameworks')), ['react.md']);
   writeFileSync(path, '# Team frontend rules\n');
   const exclude = join(root, '.git/info/exclude');
   writeFileSync(exclude, '/user-only/\n');
@@ -72,7 +76,7 @@ test('init: existing convention edits and ignore rules -> preserves both without
   call('init', {});
 
   assert.equal(readFileSync(path, 'utf8'), '# Team frontend rules\n');
-  assert.match(git(root, ['ls-files', '--others', '--exclude-standard']), /^\.askill\/convention\/frontend\.md$/mu);
+  assert.match(git(root, ['ls-files', '--others', '--exclude-standard']), /^\.askill\/convention\/projects\/frontend\.md$/mu);
   assert.equal(readFileSync(exclude, 'utf8'), '/user-only/\n');
   assert.equal(readFileSync(gitignore, 'utf8'), '/team-only/\n');
 });

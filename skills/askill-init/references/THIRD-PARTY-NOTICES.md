@@ -1,6 +1,4 @@
-# FluoJS lane source
-
-The askill lane design is based on the FluoJS planning and execution workflow at revision `6ec42abf484305bcef8f2b488f413a5fbfe3f8c5`.
+# Third-party notices
 
 MIT License
 

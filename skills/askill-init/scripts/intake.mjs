@@ -60,7 +60,8 @@ function destination(input, name) {
 }
 
 function validateConfig(config) {
-  record(config, ['version', 'base_branch', 'destinations', 'policy'], 'config');
+  record(config, ['version', 'base_branch', 'destinations', 'policy', 'convention_profile'], 'config');
+  if (Object.hasOwn(config, 'convention_profile')) { validateProfile(config.convention_profile); }
   requireThat(config.version === 1, 'config.version must be 1');
   const base = nonblank(config.base_branch, 'config.base_branch');
   requireThat(!base.startsWith('-') && base !== 'HEAD', 'config.base_branch must be a named branch');
@@ -351,3 +352,4 @@ export async function intake(command, context, args) {
       throw new Error(`unknown intake command: ${command}`);
   }
 }
+import { validateProfile } from './conventions.mjs';

@@ -1,5 +1,3 @@
-// Decision ordering and plan/import boundary adapted from FluoJS 6ec42ab,
-// .agents/skills/{create-lane,execute-lane}. See ../references/NOTICE-Fluo.md.
 import { lstat, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { conventionIndex } from './conventions.mjs';

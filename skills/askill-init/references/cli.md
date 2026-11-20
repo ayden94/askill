@@ -23,6 +23,11 @@ Local-only config example (replace `main` if the target uses a different base br
 {
   "version": 1,
   "base_branch": "main",
+  "convention_profile": {
+    "project_types": ["backend"],
+    "languages": ["python"],
+    "frameworks": ["fastapi"]
+  },
   "destinations": {
     "issues": { "provider": "local" },
     "pull_requests": null,
@@ -30,6 +35,14 @@ Local-only config example (replace `main` if the target uses a different base br
   }
 }
 ```
+
+Confirm the profile with the user at first setup. Each array accepts zero or more unique IDs. Without a profile, only shared implementation and testing guidance is seeded. Existing files are never overwritten or pruned.
+
+| Field | Presets |
+|---|---|
+| `project_types` | `frontend`, `backend`, `cli`, `library`, `mobile`, `devops` |
+| `languages` | `javascript`, `typescript`, `python`, `go`, `java`, `kotlin`, `rust` (each includes a matching testing guide) |
+| `frameworks` | `react`, `nextjs`, `express`, `django`, `fastapi`, `gin`, `spring-boot`, `ktor`, `axum` |
 
 Issue creation on a remote provider requires both `approval_scope.issue_create: true` on the agreed intake and `authority.issue_create: true` on the `issues` command. Confirm the resolved remote project before granting that permission. If a remote creation response is ambiguous, observe the tracker and link the actual issue instead of repeating the write blindly.
 

@@ -47,7 +47,7 @@ async function main() {
   const call = async () => {
     const result = await handler(command, { root, store, forge }, args);
     if (command === 'init') {
-      seedConventions(store);
+      seedConventions(store, result.convention_profile);
     }
     return result;
   };

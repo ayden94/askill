@@ -14,7 +14,7 @@ The `askill-init` skill includes the CLI and templates. You do not need to clone
 
 ## Start in a project
 
-1. **Once per Git repository:** ask your agent, “Use `askill-init` to set up this project.” Choose where issues, pull or merge requests, and tickets belong. Local-only work is supported.
+1. **Once per Git repository:** ask your agent, “Use `askill-init` to set up this project.” Confirm the project type, languages, frameworks, and destinations for issues, pull or merge requests, and tickets. Local-only work is supported.
 2. **For each new task:** ask, for example, “Use `askill` to prevent duplicate saves.” Agree on the scope, register or link issues, and group them into a lane.
 3. **To resume:** ask the agent to continue the existing lane. It checks Git and the configured provider before choosing the next action.
 
@@ -26,8 +26,8 @@ A local lane can finish at the verified commit. Remote publication requires sepa
 
 ## Project files
 
-askill stores configuration, conventions, lane plans, and evidence under `.askill/`. Edit the starter rules in `.askill/convention/` and commit the ones you want implementers and reviewers to share. Initialization preserves existing edits and leaves your Git ignore rules alone.
+askill stores configuration, conventions, lane plans, and evidence under `.askill/`. Initialization seeds shared rules plus only the selected project, language, and framework guides. Each language has its own testing guide: a Python API using FastAPI does not get frontend or JavaScript rules. Edit `.askill/convention/` and commit the rules you want implementers and reviewers to share. Initialization preserves existing edits and leaves your Git ignore rules alone.
 
-[CLI reference](skills/askill-init/references/cli.md) · [Workflow and state layout](docs/workflow.md) · [Local example](examples/local/) · [Fluo port notes](docs/fluo-port.md)
+[CLI reference](skills/askill-init/references/cli.md) · [Workflow and state layout](docs/workflow.md) · [Local example](examples/local/)
 
 To run the test suite from the askill repository: `node --test`.
