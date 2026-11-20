@@ -1,6 +1,6 @@
 # Porting the Fluo lane
 
-The port uses FluoJS as its reference, pinned in [NOTICE-Fluo.md](../NOTICE-Fluo.md). It does not import from a local Fluo checkout at runtime. It adapts the lane contracts and decision order, rather than copying Fluo-specific CLI and test infrastructure as an opaque dependency.
+The port uses FluoJS as its reference, pinned in [NOTICE-Fluo.md](../skills/askill-init/references/NOTICE-Fluo.md). It does not import from a local Fluo checkout at runtime. It adapts the lane contracts and decision order, rather than copying Fluo-specific CLI and test infrastructure as an opaque dependency.
 
 | Fluo source | Port boundary |
 |---|---|

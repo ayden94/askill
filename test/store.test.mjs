@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSyn
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { openStore } from '../src/store.mjs';
+import { openStore } from '../skills/askill-init/scripts/store.mjs';
 
 function project(t) {
   const root = mkdtempSync(join(tmpdir(), 'askill-store-'));

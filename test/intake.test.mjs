@@ -3,8 +3,8 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { intake } from '../src/intake.mjs';
-import { openStore } from '../src/store.mjs';
+import { intake } from '../skills/askill-init/scripts/intake.mjs';
+import { openStore } from '../skills/askill-init/scripts/store.mjs';
 
 function localConfig(issues = { provider: 'local' }) {
   return { version: 1, base_branch: 'main', destinations: { issues, pull_requests: null, tickets: null } };

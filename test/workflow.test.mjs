@@ -5,9 +5,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { git } from '../src/store.mjs';
+import { git } from '../skills/askill-init/scripts/store.mjs';
 
-const cli = fileURLToPath(new URL('../src/cli.mjs', import.meta.url));
+const cli = fileURLToPath(new URL('../skills/askill-init/scripts/cli.mjs', import.meta.url));
 
 function fixture(t) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), 'askill-workflow-')));

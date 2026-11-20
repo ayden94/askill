@@ -5,6 +5,8 @@ description: Establish or check one project's independent issue, pull request, a
 
 # Initialize a project
 
+이 스킬의 설치 경로를 기준으로 `scripts/cli.mjs`를 실행한다. 대상 프로젝트에 askill 소스가 없어도 된다. 절대 경로를 사용해 `node "<askill-init의 설치 경로>/scripts/cli.mjs" init --root "<대상 Git 프로젝트>" --input "<설정 JSON 경로>"`로 호출한다. JSON을 표준 입력으로 넘기려면 `--input -`를 사용한다. [CLI 명령과 설정 예시](references/cli.md)를 참조한다.
+
 1. Git 루트, remote, 기본 브랜치, 기존 프로젝트 지침을 읽기 전용으로 확인한다.
 2. 사용자에게 이슈 등록처, PR/MR 대상 저장소와 브랜치, 티켓 관리처를 별개로 확인한다. 로컬 이슈와 PR·티켓 미사용도 정상이다.
 3. 확인된 값만 `.askill/config.json`에 기록한다. 기존 설정과 관찰이 다르면 덮기 전에 차이를 보여준다. 토큰이나 키는 저장하지 않는다.

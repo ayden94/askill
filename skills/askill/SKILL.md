@@ -17,4 +17,4 @@ description: Route repository work from scope agreement through issues, lane exe
 
 단계 이름은 실행 권한이 아니다. 누락된 어댑터나 실행기는 건너뛰어 완료한 것으로 기록하지 않는다.
 
-명령과 입력은 askill 배포 묶음의 `docs/cli.md`를 참조한다. 현재 단계가 끝났다는 답변만으로 다음 단계로 넘기지 말고 CLI에 기록된 결과를 확인한다.
+설치된 `askill-init` 스킬에서 CLI(`scripts/cli.mjs`)와 상세 명령(`references/cli.md`)을 찾는다. 하위 스킬의 `askill <command>`는 이 스크립트를 `node`로 실행한다는 뜻이다. 현재 단계가 끝났다는 답변만으로 다음 단계로 넘기지 말고 CLI에 기록된 결과를 확인한다.

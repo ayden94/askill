@@ -8,35 +8,20 @@ lane마다: 범위 합의 → 이슈 등록 → lane 생성
   → 이슈별 preflight → 구현 → 3축 리뷰 → 필요 시 PR/MR → lane 회고
 ```
 
-## 빠른 시작
+## 전역 설치
 
-Node.js 22 이상과 Git이 필요해요. 의존성 설치나 원격 계정 없이 CLI를 실행할 수 있어요. 아래 예시는 기본 브랜치가 `main`이고 기준 커밋이 있는 로컬 저장소를 사용해요. 다른 브랜치라면 설정 예시의 `base_branch`를 수정하세요.
-
-```bash
-git clone https://github.com/ayden94/askill.git
-cd askill
-node src/cli.mjs --help
-
-target=/absolute/path/to/your-repo
-node src/cli.mjs init --root "$target" --input examples/local/config.json
-```
-
-같은 프로젝트에서는 초기화를 반복할 필요가 없어요. 이후 새 lane은 범위 합의부터 시작하세요.
+Node.js 22 이상과 Git이 필요해요. 비공개 저장소에 접근할 수 있는 GitHub 인증을 먼저 준비하고, 사용하는 에이전트를 선택해 스킬 전체를 한 번 전역 설치하세요.
 
 ```bash
-printf '%s\n' '{"intake_id":"save","problem":"저장 중 중복 요청이 나간다","drafts":[{"draft_id":"prevent-duplicate","title":"중복 저장 방지"}]}' |
-  node src/cli.mjs scope --root "$target" --input -
-printf '%s\n' '{"artifact_id":"save","intake_id":"save"}' |
-  node src/cli.mjs issues --root "$target" --input -
-printf '%s\n' '{"lane_id":"save","artifact_id":"save","authority_scope":{"local_commit":true}}' |
-  node src/cli.mjs create-lane --root "$target" --input -
-printf '%s\n' '{"lane_id":"save"}' |
-  node src/cli.mjs import-lane --root "$target" --input -
-printf '%s\n' '{"lane_id":"save"}' |
-  node src/cli.mjs plan-all --root "$target" --input -
+npx skills@latest add ayden94/askill --global --skill '*'
 ```
 
-위 예시는 로컬 이슈를 등록하고 lane의 다음 작업을 보여줘요. 구현이나 커밋을 바로 실행하지는 않아요. 에이전트 호스트에서는 [`skills/`](skills/)의 `askill`을 진입점으로 사용하세요. 호스트가 `plan`의 작업을 배정하고, CLI는 `record`로 받은 결과가 승인된 계약과 현재 커밋에 맞는지 검사해요. 명령별 입력은 [CLI 가이드](docs/cli.md)에 있어요.
+## 프로젝트에서 시작하기
+
+1. 대상 Git 프로젝트에서 에이전트에 **“`askill-init`으로 이 프로젝트 초기화해줘”**라고 요청하세요. 이슈·PR/MR·티켓 목적지를 설정하고, 편집 가능한 컨벤션 초안을 생성해요. 원격 서비스 없이 로컬로만 시작해도 돼요.
+2. 같은 프로젝트의 다음 작업부터는 **“`askill`로 이 작업을 시작해줘”**라고 요청하세요. 설정은 다시 하지 않고 범위 합의부터 시작해요.
+
+CLI와 템플릿은 `askill-init` 스킬에 들어 있어요. 대상 프로젝트에 askill 소스, npm 패키지, 전역 `askill` 실행 파일을 따로 설치할 필요가 없어요. 호스트는 `plan`의 작업을 배정하고, CLI는 `record`로 받은 결과가 계약과 현재 커밋에 맞는지 검사해요. 명령별 입력은 [CLI 가이드](docs/cli.md)에 있어요.
 
 ## 프로젝트에 저장되는 파일
 

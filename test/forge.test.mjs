@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { delimiter, join } from 'node:path';
 import { test } from 'node:test';
 
-import { observeIssue, observePR, publishPR, registerIssue, runOCR } from '../src/forge.mjs';
+import { observeIssue, observePR, publishPR, registerIssue, runOCR } from '../skills/askill-init/scripts/forge.mjs';
 
 const head = 'a'.repeat(40);
 const older = 'b'.repeat(40);

@@ -4,8 +4,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 
-import { engine } from '../src/engine.mjs';
-import { git, openStore } from '../src/store.mjs';
+import { engine } from '../skills/askill-init/scripts/engine.mjs';
+import { git, openStore } from '../skills/askill-init/scripts/store.mjs';
 
 const axes = ['contract', 'code', 'verification'];
 const identity = { lane_id: 'jobs', issue: 'X' };
