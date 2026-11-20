@@ -11,6 +11,7 @@ export function validateProfile(profile) {
     throw new TypeError('Invalid convention_profile');
   }
   for (const [key, folder] of Object.entries(catalogs)) {
+    if (key === 'project_types' && !Object.hasOwn(profile, key)) { continue; }
     const choices = readdirSync(new URL(`${folder}/`, templates)).filter((p) => p.endsWith('.md')).map((p) => p.slice(0, -3));
     const picked = profile[key];
     if (!Array.isArray(picked) || !picked.every((p) => choices.includes(p)) || new Set(picked).size !== picked.length) {
@@ -23,7 +24,7 @@ export function seedConventions(store, profile) {
   const paths = ['common.md', 'testing.md'];
   if (profile) {
     for (const [key, folder] of Object.entries(catalogs)) {
-      for (const id of profile[key]) {
+      for (const id of profile[key] ?? []) {
         paths.push(`${folder}/${id}.md`);
         if (key === 'languages') { paths.push(`testing/${id}.md`); }
       }

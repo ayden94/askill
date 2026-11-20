@@ -24,7 +24,6 @@ Local-only config example (replace `main` if the target uses a different base br
   "version": 1,
   "base_branch": "main",
   "convention_profile": {
-    "project_types": ["backend"],
     "languages": ["python"],
     "frameworks": ["fastapi"]
   },
@@ -36,11 +35,11 @@ Local-only config example (replace `main` if the target uses a different base br
 }
 ```
 
-Confirm the profile with the user at first setup. Each array accepts zero or more unique IDs. Without a profile, only shared implementation and testing guidance is seeded. Existing files are never overwritten or pruned.
+The installed init skill [infers the profile from the repository](stack-discovery.md) before calling the CLI. Direct CLI callers supply their own profile. Do not require a frontend/backend classification. For a framework-free project, use an empty `frameworks` array. Each array accepts zero or more unique IDs. Without a profile, only shared implementation and testing guidance is seeded. Existing files are never overwritten or pruned.
 
 | Field | Presets |
 |---|---|
-| `project_types` | `frontend`, `backend`, `cli`, `library`, `mobile`, `devops` |
+| `project_types` (optional; existing profiles remain valid) | `frontend`, `backend`, `cli`, `library`, `mobile`, `devops` |
 | `languages` | `javascript`, `typescript`, `python`, `go`, `java`, `kotlin`, `rust` (each includes a matching testing guide) |
 | `frameworks` | `react`, `nextjs`, `express`, `django`, `fastapi`, `gin`, `spring-boot`, `ktor`, `axum` |
 

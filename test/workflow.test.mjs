@@ -86,6 +86,14 @@ function binding(plan) {
   return { lane_id, issue, base_sha, head_sha, contract_sha256 };
 }
 
+test('init: framework and language profile without project type -> selects only matching guides', (t) => {
+  const { root } = fixture(t, { frameworks: ['fastapi'], languages: ['python'] });
+  const directory = join(root, '.askill/convention');
+  assert.deepEqual(readdirSync(join(directory, 'frameworks')), ['fastapi.md']);
+  assert.deepEqual(readdirSync(join(directory, 'testing')), ['python.md']);
+  assert.ok(!readdirSync(directory).includes('projects'));
+});
+
 test('local lane: fix-back and restart -> only three current-head verdicts complete the lane', (t) => {
   const { root, call, invoke } = fixture(t);
   git(root, ['add', '--', '.askill/convention']);
