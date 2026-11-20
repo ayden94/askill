@@ -2,6 +2,7 @@
 // .agents/skills/{create-lane,execute-lane}. See NOTICE-Fluo.md.
 import { lstat, realpath } from 'node:fs/promises';
 import path from 'node:path';
+import { conventionIndex } from './conventions.mjs';
 
 const AXES = ['contract', 'code', 'verification'];
 const GRANTS = ['local_commit', 'push', 'pr_create', 'pr_merge', 'cleanup_command_worktrees'];
@@ -14,7 +15,7 @@ const oid = (x) => typeof x === 'string' && /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.te
 const id = (x) => typeof x === 'string' && /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(x)
   && !x.includes('..') && !/(?:\.|\.lock)$/i.test(x) && !(x in Object.prototype);
 const requireThat = (ok, message) => { if (!ok) { throw new Error(message); } };
-const statePath = (lane) => `lanes-v4/${lane}.json`;
+const statePath = (lane) => `lanes/${lane}/state.json`;
 const factPath = (lane, issue, hash) => `work/${lane}/${issue}/${hash}.json`;
 const bindingKeys = ['lane_id', 'issue', 'base_sha', 'head_sha', 'contract_sha256'];
 const bound = (record, binding) => bindingKeys.every((key) => record?.[key] === binding[key]);
@@ -59,7 +60,9 @@ function validatePlan(plan, artifact, config, digest, lane) {
 async function load(context, lane, importing) {
   const { store, root } = context;
   requireThat(id(lane), 'invalid lane_id');
-  const plan = await store.read(`lanes/${lane}.json`);
+  const planPath = `lanes/${lane}/plan.json`;
+  const savedPlan = await store.read(planPath);
+  const plan = savedPlan ?? (importing ? await store.read(`lanes/${lane}.json`) : null);
   requireThat(id(plan?.source?.artifact_id), 'missing plan or invalid artifact_id');
   const artifact = await store.read(`issues/${plan.source.artifact_id}.json`);
   const config = await store.read('config.json');
@@ -68,14 +71,17 @@ async function load(context, lane, importing) {
     && plan.base_branch !== 'HEAD', 'unsafe base branch');
   await store.git(root, ['check-ref-format', `refs/heads/${plan.base_branch}`]);
   const plan_sha256 = store.digest(plan);
-  let state = await store.read(statePath(lane));
-  if (importing && state === null) {
-    state = { version: 4, lane_id: lane, plan_sha256, source: plan.source, issues: Object.fromEntries(
-      plan.confirmed_issues.map((i) => [i, { attempts: {}, reviews: {} }])) };
-    await store.create(statePath(lane), state);
-  }
+  const savedState = await store.read(statePath(lane));
+  const state = savedState ?? (importing
+    ? (await store.read(`lanes-v4/${lane}.json`)) ?? {
+      version: 4, lane_id: lane, plan_sha256, source: plan.source, issues: Object.fromEntries(
+        plan.confirmed_issues.map((i) => [i, { attempts: {}, reviews: {} }])),
+    }
+    : null);
   requireThat(state?.version === 4 && state.lane_id === lane && state.plan_sha256 === plan_sha256
     && store.digest(state.source) === store.digest(plan.source), 'lane not imported or incompatible re-import');
+  if (importing && savedPlan === null) { await store.create(planPath, plan); }
+  if (importing && savedState === null) { await store.create(statePath(lane), state); }
   return { ...context, root: await realpath(root), plan, artifact, config, state };
 }
 
@@ -179,7 +185,8 @@ function decision(ob, action, extras = {}) {
   if (['implement', 'fix-back'].includes(action)) {
     dispatch = { skill: 'askill-issue-implement', ...bindingOf(row), branch: row.branch, worktree: row.worktree,
       allow_commit: grants.local_commit, allow_push: false, require_new_head: action === 'fix-back',
-      contract_ref: `.askill/${factPath(row.lane_id, row.issue, row.contract_sha256)}` };
+      contract_ref: `.askill/${factPath(row.lane_id, row.issue, row.contract_sha256)}`,
+      convention: row.convention };
     if (action === 'implement' && !row.present) {
       // argv is data for the operator's trusted host, not a generated shell command.
       dispatch.setup = { cwd: ob.root, argv: row.head_sha
@@ -233,6 +240,7 @@ function decide(ob) {
   if (missing.length) {
     return next('review', { reason: fresh.some((r) => r.verdict === 'needs-evidence') ? 'needs-evidence' : 'missing-axes',
       assignments: missing.map((axis) => ({ ...bindingOf(row), axis, worktree: row.worktree, read_only: true,
+        convention: row.convention,
         contract_ref: `.askill/${factPath(row.lane_id, row.issue, row.contract_sha256)}`,
         implementation_ref: `.askill/${factPath(row.lane_id, row.issue, entry.implementation)}`,
         exclude_reviewers: [implementation.implementer, ...fresh.filter((r) => r.axis !== axis).map((r) => r.reviewer)] })) });
@@ -271,6 +279,10 @@ async function observe(c, issue, deps) {
   const required = (observed) => observed.pr?.state === 'MERGED'
     ? observed.pr.merge_commit_sha ?? observed.pr.head : observed.row.head_sha;
   const row = await gitFacts(c, issue, contract?.base_sha, deps.map(([, ob]) => required(ob)).filter(Boolean));
+  const indexEntry = await c.store.git(c.root, ['ls-tree', row.base_sha, '--', conventionIndex]);
+  row.convention = /^100(?:644|755) blob /u.test(indexEntry)
+    ? { path: conventionIndex, base_sha: row.base_sha }
+    : null;
   const config = c.config;
   const local = config.destinations.issues.provider === 'local';
   const issueRef = local ? await c.store.read(`issues/local/${issue}.json`)

@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import {
-  appendFileSync, linkSync, lstatSync, mkdirSync, readFileSync, realpathSync,
+  linkSync, lstatSync, mkdirSync, readFileSync, realpathSync,
   renameSync, rmdirSync, unlinkSync, writeFileSync,
 } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -93,20 +93,6 @@ export function projectRoot(cwd) {
   return root;
 }
 
-export function excludeRuntimeState(root) {
-  const exclude = git(root, ['rev-parse', '--path-format=absolute', '--git-path', 'info/exclude']);
-  const status = statOrNull(exclude);
-  if (status && !status.isFile()) {
-    throw new StoreError(`Expected a regular Git exclude file: ${exclude}`);
-  }
-  const rules = '# askill runtime state\n/.askill/*\n!/.askill/config.json\n/.worktrees/\n';
-  const existing = status ? readFileSync(exclude, 'utf8') : '';
-  if (!existing.includes(rules)) {
-    directory(resolve(exclude, '..'), true);
-    appendFileSync(exclude, `\n${rules}`);
-  }
-}
-
 export function openStore(root) {
   const stateRoot = join(root, '.askill');
   function stateFile(relativePath, create) {
@@ -132,10 +118,10 @@ export function openStore(root) {
     return { parent, target, existing };
   }
 
-  function publish(relativePath, value, replace) {
+  function publish(relativePath, content, replace) {
     const { parent, target } = stateFile(relativePath, true);
     const temporary = join(parent, `.pending-${randomUUID()}`);
-    writeFileSync(temporary, `${JSON.stringify(value, null, 2)}\n`, { flag: 'wx', mode: 0o600 });
+    writeFileSync(temporary, content, { flag: 'wx', mode: 0o600 });
     if (replace) {
       try {
         renameSync(temporary, target);
@@ -150,7 +136,6 @@ export function openStore(root) {
         unlinkSync(temporary);
       }
     }
-    return value;
   }
 
   return {
@@ -158,8 +143,23 @@ export function openStore(root) {
       const location = stateFile(relativePath, false);
       return location?.existing ? JSON.parse(readFileSync(location.target, 'utf8')) : null;
     },
-    write: (path, value) => publish(path, value, true),
-    create: (path, value) => publish(path, value, false),
+    write(path, value) {
+      publish(path, `${JSON.stringify(value, null, 2)}\n`, true);
+      return value;
+    },
+    create(path, value) {
+      publish(path, `${JSON.stringify(value, null, 2)}\n`, false);
+      return value;
+    },
+    createTextIfMissing(path, content) {
+      try {
+        publish(path, content, false);
+      } catch (error) {
+        if (error?.code !== 'EEXIST') {
+          throw error;
+        }
+      }
+    },
     digest,
     git,
     async transaction(operation) {

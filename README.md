@@ -1,25 +1,62 @@
 # askill
 
-저장소별 운영 정책과 실행 환경을 분리한 이슈 → lane 작업 스킬 묶음.
+이슈 하나 또는 여러 개를 **lane**으로 묶어 구현하고, 같은 커밋을 기준으로 검증하는 CLI와 에이전트 스킬이에요. 특정 에이전트 호스트나 GitHub에 묶이지 않아서 로컬 Git 저장소만으로도 시작할 수 있어요.
 
 ```text
-init → scope → issues → create-lane
-                           └─ execute-lane
-                                ├─ issue-preflight
-                                ├─ issue-implement
-                                ├─ review-head (필수 3축 + 선택 OCR)
-                                └─ sync-pr (별도 권한)
+프로젝트 설정 → 범위 합의 → 이슈 등록 → lane 생성
+  → 이슈별 preflight → 구현 → 3축 리뷰 → 필요 시 PR/MR
 ```
 
-- [`skills/`](skills/): `askill` 진입점과 단계별 `SKILL.md`. 배포 시 등록된 스킬 간 이름을 해석할 수 있게 묶음 전체를 사용한다.
-- [`src/`](src/): CLI, 상태 저장, intake, lane 실행기, 원격·OCR 어댑터.
-- [`docs/cli.md`](docs/cli.md): 설정부터 로컬 리뷰 완료까지 명령과 JSON 입력.
-- [`docs/workflow.md`](docs/workflow.md): 각 단계의 입력·출력, 상태·승인 경계.
-- [`docs/fluo-port.md`](docs/fluo-port.md): Fluo에서 그대로 유지할 구조와 교체할 환경 의존성.
-- [`examples/local/`](examples/local/): 문서 없는 로컬 프로젝트의 설정·이슈·lane·preflight 예시. 실제 실행 증거가 아니다.
+## 빠른 시작
 
-대상 프로젝트의 `.askill/config.json`에는 공유 가능한 목적지와 정책만 둔다. `.askill/intakes/`, `issues/`, `lanes/`, `lanes-v4/`, `work/`의 실행 데이터는 기본적으로 Git에서 제외한다. 회사별 규칙은 대상 프로젝트에서 읽고 비밀값은 기존 호스트 자격 증명 저장소에 둔다.
+Node.js 22 이상과 Git이 필요해요. 의존성 설치나 원격 계정 없이 CLI를 실행할 수 있어요. 아래 예시는 기본 브랜치가 `main`이고 기준 커밋이 있는 로컬 저장소를 사용해요. 다른 브랜치라면 설정 예시의 `base_branch`를 수정하세요.
 
-Node.js 22 이상과 Git이 필요하다. 추가 패키지 없이 `node src/cli.mjs --help`와 `node --test`를 실행할 수 있다. `--root`로 대상 프로젝트를 지정하고, 에이전트 호스트에서는 `skills/`와 CLI를 함께 사용한다. 독립 리뷰어 호출은 호스트가 맡고, CLI는 실제 결과가 현재 계약과 커밋에 맞는지 판정한다.
+```bash
+git clone https://github.com/ayden94/askill.git
+cd askill
+node src/cli.mjs --help
 
-로컬 흐름은 원격 CLI 없이 작동한다. 원격 등록은 설정에 따라 `gh` 또는 `glab`, 추가 리뷰는 설치된 `ocr`를 사용한다. 티켓 목적지는 독립적으로 기록하며, 이슈/PR 어댑터가 티켓을 자동 수정하지는 않는다.
+target=/absolute/path/to/your-repo
+node src/cli.mjs init --root "$target" --input examples/local/config.json
+
+printf '%s\n' '{"intake_id":"save","problem":"저장 중 중복 요청이 나간다","drafts":[{"draft_id":"prevent-duplicate","title":"중복 저장 방지"}]}' |
+  node src/cli.mjs scope --root "$target" --input -
+printf '%s\n' '{"artifact_id":"save","intake_id":"save"}' |
+  node src/cli.mjs issues --root "$target" --input -
+printf '%s\n' '{"lane_id":"save","artifact_id":"save","authority_scope":{"local_commit":true}}' |
+  node src/cli.mjs create-lane --root "$target" --input -
+printf '%s\n' '{"lane_id":"save"}' |
+  node src/cli.mjs import-lane --root "$target" --input -
+printf '%s\n' '{"lane_id":"save"}' |
+  node src/cli.mjs plan-all --root "$target" --input -
+```
+
+위 예시는 로컬 이슈를 등록하고 lane의 다음 작업을 보여줘요. 구현이나 커밋을 바로 실행하지는 않아요. 에이전트 호스트에서는 [`skills/`](skills/)의 `askill`을 진입점으로 사용하세요. 호스트가 `plan`의 작업을 배정하고, CLI는 `record`로 받은 결과가 승인된 계약과 현재 커밋에 맞는지 검사해요. 명령별 입력은 [CLI 가이드](docs/cli.md)에 있어요.
+
+## 프로젝트에 저장되는 파일
+
+```text
+.askill/
+├── config.json               # 이슈·PR/MR·티켓 목적지와 프로젝트 정책
+├── convention/               # 편집 가능한 공통·프론트엔드·백엔드·테스트 규칙
+├── intakes/                  # 범위 합의와 이슈 초안
+├── issues/                   # 확인된 이슈 목록
+├── lanes/<lane-id>/
+│   ├── plan.json             # 이슈 구성·의존성·실행 권한
+│   └── state.json            # 실행 상태·재시도·검증 기록 참조
+└── work/                     # 이슈별 계약과 검증 근거
+```
+
+`init`은 빠진 컨벤션 초안만 만들고 기존 편집을 덮어쓰지 않아요. 편집한 규칙을 기준 브랜치에 커밋하면 구현자와 리뷰어가 같은 버전을 읽어요. **Git에 포함할지는 사용자가 결정해요.** askill은 `.gitignore`나 `info/exclude`를 자동으로 바꾸지 않아요. 설정과 실행 기록을 공유하기 전에는 민감한 정보가 없는지 확인하세요.
+
+이전 레이아웃에서 만든 lane은 `import-lane`을 다시 실행하면 기존 상태를 보존한 채 새 폴더로 가져와요. 기존 파일은 자동으로 삭제하지 않아요.
+
+## 어떻게 검증하나요?
+
+- **Preflight:** 무엇을 바꾸고 유지할지, 무엇을 관찰해야 완료인지 합의해요. 프로젝트 문서가 없는 경우에도 시작할 수 있어요.
+- **3축 리뷰:** 독립 리뷰어가 같은 커밋에서 계약 충족, 코드 품질과 컨벤션 준수, 검증 근거를 확인해요. 수정해서 커밋이 바뀌면 이전 판정을 재사용하지 않아요.
+- **선택 도구:** Open Code Review(`ocr`)는 설치되어 있고 diff 전송 권한이 있을 때만 추가로 실행해요. 원격 이슈나 PR/MR이 필요할 때만 `gh` 또는 `glab`을 사용해요. 머지와 정리는 호스트가 별도 권한으로 처리하고, 티켓은 목적지만 설정해요.
+
+[워크플로 계약](docs/workflow.md) · [Fluo에서 가져온 구조](docs/fluo-port.md) · [로컬 예시](examples/local/)
+
+개발 검증: `node --test`

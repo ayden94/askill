@@ -13,6 +13,8 @@ description: Review one exact head with three independent mandatory axes and opt
 
 리뷰어마다 [계약](references/contract.md), [코드 품질](references/code.md), [검증 근거](references/verification.md) 역할 문서 중 해당하는 하나만 전달한다. 세 역할을 같은 작업자에게 순차 배정하지 않는다.
 
+할당의 `convention`이 있으면 모든 리뷰어가 해당 `base_sha`의 색인과 계약이 지정한 규칙을 읽고 자기 축에 적용한다. 코드 축은 실제 diff의 위반을 `규칙 출처 → 변경 위치 → 영향`으로 기록한다. 작업 브랜치의 컨벤션 변경으로 판정 기준을 바꾸지 않는다.
+
 리뷰 라운드 중 동일한 바인딩으로 `askill run-ocr`를 호출한다. OCR은 세 축을 대체하지 않는다. 실행 환경에 없으면 `skipped-uninstalled`로 기록하고 자동 설치하지 않는다. 설치되어 있고 제공자에 diff를 보낼 권한이 있으면 같은 base/head에 실행한다. 권한 부재와 실행 실패는 각각 별도로 기록한다. OCR 출력은 후보이며 실제 코드에서 확인한 결함만 수정 사유가 된다.
 
 필수 축이 빠지거나 근거가 없으면 통과가 아니다. head나 승인 계약이 바뀌면 해당 조합의 3축 리뷰를 다시 수행한다.

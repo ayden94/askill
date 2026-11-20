@@ -7,10 +7,11 @@ All runtime paths are relative to the target project root, not the askill instal
 | Record | Owns |
 |---|---|
 | `.askill/config.json` | Independent issue, PR, and ticket destinations; base branch and non-secret project policy |
+| `.askill/convention/` | Editable, Git-tracked project rules; the index and its related rules are read from the lane's pinned base |
 | `.askill/intakes/<id>.json` | Agreed problem, exclusions, issue drafts, and approval scope |
 | `.askill/issues/<id>.json` | Canonical ordered set of confirmed issue references from registration or read-only intake |
-| `.askill/lanes/<id>.json` | Immutable source-bound plan, dependency reasons, retry policy, and explicit grants |
-| `.askill/lanes-v4/<id>.json` | Execution facts, attempt counts, blockers, and references to accepted contracts and reviews |
+| `.askill/lanes/<id>/plan.json` | Immutable source-bound plan, dependency reasons, retry policy, and explicit grants |
+| `.askill/lanes/<id>/state.json` | Execution facts, attempt counts, blockers, and references to accepted contracts and reviews |
 | `.askill/work/<lane-id>/<issue-id>/` | Preflight, exact-head reviews, optional OCR and raw verification evidence |
 
 Git and provider observations decide what currently exists. A ledger or UI status is not proof that a head, PR, or CI run still matches. Scope approval, issue creation, local commits, push, PR creation, merging, and cleanup have separate authorization boundaries.

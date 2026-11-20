@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -55,7 +55,26 @@ test('local intake: retry after issue registration -> resumes with the same cano
   assert.equal(first.issues.length, 1);
   assert.match(first.issues[0].id, /^LOCAL-/u);
   assert.deepEqual(resumed, first);
-  assert.equal(git(root, ['check-ignore', '.askill/issues/calculate.json']), '.askill/issues/calculate.json');
+  assert.match(git(root, ['ls-files', '--others', '--exclude-standard']), /^\.askill\/issues\/calculate\.json$/mu);
+});
+
+test('init: existing convention edits and ignore rules -> preserves both without adding exclusions', (t) => {
+  const { root, call } = fixture(t);
+  const directory = join(root, '.askill/convention');
+  const path = join(directory, 'frontend.md');
+  assert.deepEqual(readdirSync(directory).sort(), ['README.md', 'backend.md', 'common.md', 'frontend.md', 'testing.md']);
+  writeFileSync(path, '# Team frontend rules\n');
+  const exclude = join(root, '.git/info/exclude');
+  writeFileSync(exclude, '/user-only/\n');
+  const gitignore = join(root, '.gitignore');
+  writeFileSync(gitignore, '/team-only/\n');
+
+  call('init', {});
+
+  assert.equal(readFileSync(path, 'utf8'), '# Team frontend rules\n');
+  assert.match(git(root, ['ls-files', '--others', '--exclude-standard']), /^\.askill\/convention\/frontend\.md$/mu);
+  assert.equal(readFileSync(exclude, 'utf8'), '/user-only/\n');
+  assert.equal(readFileSync(gitignore, 'utf8'), '/team-only/\n');
 });
 
 function binding(plan) {
@@ -65,14 +84,22 @@ function binding(plan) {
 
 test('local lane: fix-back and restart -> only three current-head verdicts complete the lane', (t) => {
   const { root, call, invoke } = fixture(t);
+  git(root, ['add', '--', '.askill/convention']);
+  git(root, ['commit', '-m', 'Fixture conventions']);
   const { issues: [{ id: issue }] } = registerCalculation(call);
   const lane_id = 'calculate';
   const target = { lane_id, issue };
   const axes = ['contract', 'code', 'verification'];
   call('create-lane', { lane_id, artifact_id: 'calculate', authority_scope: { local_commit: true } });
   call('import-lane', { lane_id });
+  assert.deepEqual(readdirSync(join(root, '.askill/lanes', lane_id)).sort(), ['plan.json', 'state.json']);
+  assert.ok(!readdirSync(join(root, '.askill')).includes('lanes-v4'));
   const before = call('plan', target);
   assert.equal(before.action, 'preflight');
+  assert.deepEqual(before.convention, {
+    path: '.askill/convention/README.md',
+    base_sha: git(root, ['rev-parse', 'main']),
+  });
   const contract = {
     version: 1, ...target, base_sha: before.base_sha, issue_sha256: before.issue_sha256,
     goal: 'Return the sum of the inputs',
@@ -83,6 +110,7 @@ test('local lane: fix-back and restart -> only three current-head verdicts compl
   };
   const implementation = call('record', { ...target, kind: 'preflight', contract });
   assert.equal(implementation.action, 'implement');
+  assert.deepEqual(implementation.dispatch.convention, before.convention);
   const { worktree, dispatch: { setup } } = implementation;
   const [executable, ...argv] = setup.argv;
   assert.equal(executable, 'git');
@@ -110,6 +138,10 @@ test('local lane: fix-back and restart -> only three current-head verdicts compl
   );
   assert.equal(call('record', reviewer(bad, 'contract', 'block', 'Empty input returns 1')).action, 'fix-back');
   const good = recordImplementation('export const total = (inputs) => inputs.reduce((a, b) => a + b, 0);\n', 'Preserve empty input');
+  assert.equal(good.assignments.length, 3);
+  for (const assignment of good.assignments) {
+    assert.deepEqual(assignment.convention, before.convention);
+  }
   call('import-lane', { lane_id });
   const ocr = call('run-ocr', binding(good));
   assert.ok(['skipped-uninstalled', 'skipped-not-authorized'].includes(ocr.status), ocr.status);

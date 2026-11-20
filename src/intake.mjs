@@ -312,7 +312,7 @@ async function createLane(context, args, config, configSha) {
   if (usesArtifact) {
     await observeIssues(context, issueDestination, ids);
   }
-  return publish(store, `lanes/${laneId}.json`, {
+  const candidate = {
     version: 2,
     lane_id: laneId,
     base_branch: config.base_branch,
@@ -323,7 +323,11 @@ async function createLane(context, args, config, configSha) {
     dependency_reasons: reasons,
     retry_policy: retry,
     authority_scope: authority,
-  });
+  };
+  const legacy = await store.read(`lanes/${laneId}.json`);
+  requireThat(legacy === null || store.digest(legacy) === store.digest(candidate),
+    'legacy lane plan differs; import the original lane before proceeding');
+  return publish(store, `lanes/${laneId}/plan.json`, candidate);
 }
 
 export async function intake(command, context, args) {

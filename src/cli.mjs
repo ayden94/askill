@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
+import { seedConventions } from './conventions.mjs';
 import { engine } from './engine.mjs';
 import * as forge from './forge.mjs';
 import { intake } from './intake.mjs';
-import { excludeRuntimeState, openStore, projectRoot } from './store.mjs';
+import { openStore, projectRoot } from './store.mjs';
 
 const intakeCommands = new Set(['init', 'scope', 'issues', 'create-lane']);
 const engineCommands = new Set(['import-lane', 'plan', 'plan-all', 'record', 'run-ocr', 'publish-pr']);
@@ -45,7 +46,7 @@ async function main() {
   const call = async () => {
     const result = await handler(command, { root, store, forge }, args);
     if (command === 'init') {
-      excludeRuntimeState(root);
+      seedConventions(store);
     }
     return result;
   };

@@ -5,7 +5,7 @@ description: Resume a lane by observing current state, taking one authorized act
 
 # Execute a lane
 
-계획 장부를 정확한 출처와 함께 실행 장부 `.askill/lanes-v4/<lane-id>.json`으로 가져온다. 가져오기는 권한을 확장하거나 실행 중 장부를 초기화하지 않는다.
+`.askill/lanes/<lane-id>/plan.json`을 검증하고 같은 폴더의 `state.json`에서 실행을 시작하거나 재개한다. 가져오기는 권한을 확장하거나 실행 중 장부를 초기화하지 않는다.
 
 1. Git과 설정된 제공자에서 상태를 새로 관찰한다.
 2. 엔진이 고른 행동 하나를 단계에 전달한다. 독립 이슈는 각 worktree에서 병렬 실행할 수 있다.

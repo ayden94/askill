@@ -27,12 +27,17 @@ async function fixture(t, options = {}) {
   for (const issue of issues) { store.create(`issues/local/${issue.id}.json`, { ...issue, body: 'fix it' }); }
   const artifact = { version: 1, artifact_id: 'batch', config_sha256: store.digest(config), issues };
   store.create('issues/batch.json', artifact);
-  store.create('lanes/jobs.json', { version: 2, lane_id: 'jobs', config_sha256: store.digest(config),
+  const lanePlan = { version: 2, lane_id: 'jobs', config_sha256: store.digest(config),
     source: { artifact_id: 'batch', sha256: store.digest(artifact) }, base_branch: 'main',
     confirmed_issues: ['X', 'Y'], dependency_graph: { X: [], Y: ['X'] },
     dependency_reasons: [{ issue: 'Y', depends_on: 'X', reason: 'requires X' }],
     retry_policy: { attempt_ceiling: 2 }, authority_scope: { local_commit: true,
-      push: false, pr_create: false, pr_merge: false, cleanup_command_worktrees: false, ...options.grants } });
+      push: false, pr_create: false, pr_merge: false, cleanup_command_worktrees: false, ...options.grants } };
+  store.create(options.legacy ? 'lanes/jobs.json' : 'lanes/jobs/plan.json', lanePlan);
+  if (options.legacy) {
+    store.create('lanes-v4/jobs.json', { version: 4, lane_id: 'jobs', plan_sha256: store.digest(lanePlan),
+      source: lanePlan.source, issues: { X: { attempts: { preflight: 1 }, reviews: {} }, Y: { attempts: {}, reviews: {} } } });
+  }
   const forge = { observePR: async () => null, ...options.forge };
   const call = (command, input = identity) => engine(command, { root, store: openStore(root), forge }, input);
   await call('import-lane');
@@ -113,15 +118,25 @@ test('plan: unrelated base branch advance -> keep the accepted comparison base a
   assert.equal(result.action, 'done');
 });
 
+test('import: old lane layout -> preserves the existing execution ledger in the unified folder', async (t) => {
+  const { store, call } = await fixture(t, { legacy: true });
+
+  const state = await call('import-lane');
+
+  assert.equal(state.issues.X.attempts.preflight, 1);
+  assert.deepEqual(store.read('lanes/jobs/state.json'), store.read('lanes-v4/jobs.json'));
+  assert.deepEqual(store.read('lanes/jobs/plan.json'), store.read('lanes/jobs.json'));
+});
+
 test('import: config or source changes -> refuse rather than resetting the execution ledger', async (t) => {
   const { store, call } = await fixture(t);
-  const state = store.read('lanes-v4/jobs.json');
+  const state = store.read('lanes/jobs/state.json');
   const source = store.read('issues/batch.json');
   store.write('issues/batch.json', { ...source, issues: source.issues.toReversed() });
 
   await assert.rejects(call('import-lane'), /provenance/);
 
-  assert.deepEqual(store.read('lanes-v4/jobs.json'), state);
+  assert.deepEqual(store.read('lanes/jobs/state.json'), state);
 });
 
 test('record: repeated phase failures -> persist bounded blocker until explicitly resumed', async (t) => {

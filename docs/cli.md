@@ -11,13 +11,15 @@ Use `node /path/to/askill/src/cli.mjs` or the `askill` package binary in an envi
 | `issues` | `artifact_id` and exactly one of `intake_id` or `issue_ids`; remote registration additionally takes command authority |
 | `create-lane` | `lane_id` and `artifact_id` (recommended) or `issue_ids`; optional dependency graph, reasons, retry policy, and authority scope |
 
-`init` adds local Git exclude rules for runtime state and worktrees without editing tracked files. For a shared project, mirror them in its tracked `.gitignore`. Shared config must not contain credentials. Existing Git-tracked paths are not made untracked by ignore rules.
+`init` does not edit `.gitignore` or Git's `info/exclude`. Choose what to track or exclude yourself. If an older version added an `# askill runtime state` block to `info/exclude`, it is left untouched; edit or remove it if you no longer want that policy. Keep credentials out of shared config.
+
+`init` also fills in missing Markdown starter files under `.askill/convention/` without overwriting edits. Update `README.md` and the linked common, frontend, backend, or testing guidance to match the project. Do not ignore this directory: commit the rules to the configured base branch to make them available to the lane. `plan`, implementer dispatch, and the three review assignments carry the same convention index path and pinned base when present. Use that base rather than uncommitted files or the implementation head to read rules.
 
 Issue creation on a remote provider requires both `approval_scope.issue_create: true` on the agreed intake and `authority.issue_create: true` on the `issues` command. Confirm the resolved remote project before granting that permission. If a remote creation response is ambiguous, observe the tracker and link the actual issue instead of repeating the write blindly.
 
 ## Execution and review
 
-Import with `import-lane` and `{"lane_id":"…"}`. Use `plan-all` with that same input or `plan` with `{"lane_id":"…","issue":"…"}`. A plan exposes the assigned branch and worktree, current base and head, issue digest, and accepted contract digest when present. Re-read the plan rather than reusing stale hashes.
+Import with `import-lane` and `{"lane_id":"…"}`. The immutable `plan.json` and mutable `state.json` live together in `.askill/lanes/<lane-id>/`. For an older lane, run the same import once: it validates and copies the legacy plan and execution state into the unified folder without resetting progress or removing the originals. Use `plan-all` with the same input or `plan` with `{"lane_id":"…","issue":"…"}`. A plan exposes the assigned branch and worktree, current base and head, issue digest, and accepted contract digest when present. Re-read the plan rather than reusing stale hashes.
 
 | Plan action | Coordinator action |
 |---|---|

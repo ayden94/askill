@@ -60,7 +60,7 @@ test('intake: local drafts and a semantic edge -> stable issues and immutable so
   assert.equal(plan.authority_scope.push, false);
   assert.deepEqual(await call('create-lane', laneArgs), plan);
   await assert.rejects(call('create-lane', { ...laneArgs, authority_scope: {} }), /already exists and differs/);
-  assert.deepEqual(store.read('lanes/save.json'), plan);
+  assert.deepEqual(store.read('lanes/save/plan.json'), plan);
 });
 
 test('create-lane: invalid dependencies -> rejects without publishing a plan', async (t) => {
@@ -78,7 +78,7 @@ test('create-lane: invalid dependencies -> rejects without publishing a plan', a
     dependency_reasons: [{ issue: docs, depends_on: fix, reason: 'Not a real edge' }],
   }), /cover one graph edge/);
 
-  assert.equal(store.read('lanes/save.json'), null);
+  assert.equal(store.read('lanes/save/plan.json'), null);
 });
 
 test('create-lane: duplicate identifiers, unsafe IDs and destination drift -> fail closed', async (t) => {
@@ -93,7 +93,7 @@ test('create-lane: duplicate identifiers, unsafe IDs and destination drift -> fa
   await assert.rejects(call('create-lane', { lane_id: 'save', issue_ids: [issue.id, issue.id] }), /duplicates/);
   await assert.rejects(call('create-lane', { lane_id: 'save', artifact_id: 'save' }), /configuration has drifted/);
 
-  assert.equal(store.read('lanes/save.json'), null);
+  assert.equal(store.read('lanes/save/plan.json'), null);
 });
 
 test('issues: uncertain remote creation -> no replay across artifacts, existing issue can be linked', async (t) => {
