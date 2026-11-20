@@ -1,5 +1,11 @@
 # Server-sent events
 
+**Invariant:** Bound each subscriber's queue and unsubscribe when its response body disappears, even if no new event arrives.
+
+**Compatibility:** Stable [`Sse`/`KeepAlive`](https://docs.rs/axum/0.8.0/axum/response/sse/index.html) pattern in Axum 0.6–0.8. Backpressure and close notification are from [Tokio 1's bounded MPSC](https://docs.rs/tokio/1/tokio/sync/mpsc/fn.channel.html) (`sync` feature); `ReceiverStream` is from `tokio-stream`, not Axum.
+
+**Acceptance check:** An event arrives before the feed ends, a slow client stalls rather than grows the queue, and dropping the body releases the subscription during both a pending feed read and a pending send.
+
 ## When to read
 
 Read when an endpoint serves live events to a browser or another SSE client.

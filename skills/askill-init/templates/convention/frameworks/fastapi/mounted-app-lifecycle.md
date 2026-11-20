@@ -1,5 +1,9 @@
 # FastAPI mounted app lifecycle
 
+**Invariant:** Mounted routes see initialized resources on their own app, and each root lifespan closes its resources exactly once.
+
+**Scope:** Portable root ownership for [mounted ASGI apps](https://fastapi.tiangolo.com/advanced/events/#sub-applications). The example uses root `lifespan`; see [the app lifecycle recipe](dependencies-and-lifespan.md#version-choice-app-lifespan) for the API cutoff and event wiring.
+
 **Read when:** Mounting a second FastAPI application, especially one with resource dependencies.
 
 ## Decision

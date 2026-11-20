@@ -1,5 +1,11 @@
 # Streaming exports
 
+**Invariant:** Stream incrementally and never replace a response after it commits; release the source on every exit.
+
+**Compatibility:** Stable Gin 1.x [`ResponseWriter.Flush` and `Written`](https://github.com/gin-gonic/gin/blob/v1.11.0/response_writer.go); client visibility depends on the real Go transport and any proxy, not the Gin version. The pinned Go writer must support flushing on this deployed stack.
+
+**Acceptance check:** Receive the first line before unblocking the source; verify cleanup on disconnect and distinct handling of failures before and after commitment.
+
 ## When to read
 
 Read when a download must deliver records before the complete export is ready.

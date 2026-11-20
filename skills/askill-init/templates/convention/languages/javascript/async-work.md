@@ -1,8 +1,12 @@
 # Asynchronous work and cancellation
 
+**Invariant:** The caller receives ordered results or the original failure, and owned reads have settled before that failure escapes.
+
+**Compatibility — version boundary (HTTP transport):** Node 18+ can use the global `fetch` without an experimental flag (stable from Node 21). On Node 16.14–16.x or 17.2–17.x, drop the `= fetch` default and pass the project's Fetch-compatible transport explicitly; it must honor the supplied signal through body consumption. These legacy ranges have abort reasons; omit earlier releases from this contract. See [Node globals](https://nodejs.org/api/globals.html#fetch) and [abort reason history](https://nodejs.org/api/globals.html#abortsignalreason).
+
 ## When to read
 
-Read when introducing overlapping requests, iterating over asynchronous work, or connecting an operation to a request's lifetime. The HTTP examples use Node.js 22+ or a browser with `fetch` and `AbortController`; URLs are supplied by the caller.
+Read when introducing overlapping requests, iterating over asynchronous work, or connecting an operation to a request's lifetime. Browsers need [Fetch](https://fetch.spec.whatwg.org/), [reason-aware AbortController](https://dom.spec.whatwg.org/#aborting-ongoing-activities), and [Promise.allSettled](https://tc39.es/ecma262/multipage/control-abstraction-objects.html#sec-promise.allsettled), independently of the syntax target. If a browser lacks abort reasons and the public contract does not expose them, use `group.abort()` at both sites while keeping `throw error`; if reason identity is required, require a compatible signal and transport rather than dropping it. URLs are supplied by the caller.
 
 ## Rules
 
@@ -65,4 +69,4 @@ async function loadPair([first, second], signal, request = fetch) {
 
 ## Verification
 
-Inject two controlled responses. Complete the second first, then the first; verify result order. Repeat with the first returning HTTP `503` while the second waits for abort. **Pass:** the second observes abort before the caller receives the `HTTP 503` failure; no successful result or detached rejection escapes. A pre-aborted caller signal reaches both reads already aborted.
+Use the same controlled transport under both Node entry points and the browser variant. Complete the second response first, then the first; verify result order. Repeat with the first returning HTTP `503` while the second waits for abort. **Pass:** the second observes abort before the caller receives the `HTTP 503` failure; no successful result or detached rejection escapes. A pre-aborted caller signal reaches both reads already aborted; where reason identity is promised, both see the original reason.

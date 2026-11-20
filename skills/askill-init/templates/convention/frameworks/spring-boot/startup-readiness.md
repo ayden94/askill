@@ -1,5 +1,9 @@
 # Spring Boot startup runners and readiness
 
+**Invariant:** A replica is not advertised as ready before mandatory local initialization completes, and initialization failure fails startup.
+
+**Scope:** Portable for synchronous Boot runners and Boot's Actuator readiness health group on Boot 2.7 and newer. Built-in availability/readiness support arrived in [Boot 2.3](https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.3-Release-Notes#liveness-and-readiness-probes), not the 3.5 example baseline.
+
 **Read when:** Adding a prerequisite that must finish before this application instance receives traffic.
 
 ## Decision

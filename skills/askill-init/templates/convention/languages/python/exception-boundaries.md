@@ -1,5 +1,9 @@
 # Translate only expected exceptions at the owning boundary
 
+**Invariant:** Missing aliases, invalid content, unexpected I/O failure, and a valid empty alias object remain distinguishable.
+
+**Compatibility:** Version-independent recipe on Python 3.9+; the evaluated `dict[str, str]` annotation sets the snippet's runtime floor, not the exception policy.
+
 ## When to read
 
 Read when absence is a recoverable outcome, an adapter wraps an exception, or an I/O error must reach a CLI or request handler.

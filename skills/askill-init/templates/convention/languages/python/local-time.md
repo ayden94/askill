@@ -1,5 +1,9 @@
 # Require a policy for ambiguous local times
 
+**Invariant:** A naive wall time in a named zone becomes a UTC instant only if exactly one instant round-trips to it.
+
+**Compatibility:** Standard-library API floor, not a split: Python 3.9+ with IANA time-zone data. `zoneinfo` entered the standard library in [Python 3.9](https://docs.python.org/3.9/whatsnew/3.9.html#zoneinfo); earlier runtimes are outside this recipe.
+
 ## When to read
 
 Read when converting a user-entered local wall time in a named time zone into a unique timestamp.

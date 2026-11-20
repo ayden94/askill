@@ -1,5 +1,9 @@
 # Spring Boot transactions and persistence
 
+**Invariant:** A failed use case leaves no partial committed write, and reads fetch exactly the graph needed without relying on serialization to load it.
+
+**Scope:** Spring proxy-based, imperative JDBC/JPA transactions. Method-local rollback rules are portable; a global checked-exception default is version-sensitive. The example baseline uses Boot 3.5 / Framework 6.2.
+
 ## Context
 
 Use this when a JPA or JDBC use case must commit multiple operations together, changes its rollback policy, or exposes a read that traverses relationships.
@@ -59,6 +63,13 @@ class Checkout {
 ```
 
 Assumes a Spring-managed caller, a shared transaction manager, and reservation writes that join the transaction. The checked exception rule makes the business failure explicit. A separate transaction would change atomicity, not just call structure.
+
+## Version choice: checked-exception defaults
+
+- **Spring Framework 5.3–6.1:** Use method-local `@Transactional(rollbackFor = StockUnavailable.class)` as above to opt this use case into rollback for the checked failure.
+- **Spring Framework >=6.2:** The method-local rule still works. Only if the project deliberately wants all checked exceptions to roll back by default, set `@EnableTransactionManagement(rollbackOn = RollbackOn.ALL_EXCEPTIONS)` on the transaction configuration (`RollbackOn` is in `org.springframework.transaction.annotation`). [6.2 introduced this opt-in](https://docs.spring.io/spring-framework/reference/6.2/data-access/transaction/declarative/annotations.html); the default still rolls back on unchecked exceptions and `Error`.
+
+On either recipe, run the independent-read rollback test below with the checked `StockUnavailable`; also verify a successful call persists both writes. Audit other methods' commit contracts before changing the application-wide default.
 
 ## Exceptions
 

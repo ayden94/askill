@@ -1,5 +1,9 @@
 # Drain HTTP handlers with a fresh shutdown deadline
 
+**Invariant:** A stop signal gives ordinary handlers a fresh bounded drain window, and the owner observes the serving result before returning.
+
+**Compatibility:** Standard-library API floor, not a split: Go 1.20+ for this implementation because it uses `errors.Join` ([Go 1.20 release notes](https://go.dev/doc/go1.20#errors)). The drain protocol itself is not new in Go 1.20.
+
 ## When to read
 
 Read when a command owns an HTTP listener and must stop accepting connections while allowing in-flight handlers to finish.
@@ -29,6 +33,7 @@ func Serve(stop context.Context, server *http.Server, listener net.Listener) err
 ## Good
 
 ```go
+// Go 1.20+ (errors.Join)
 package service
 
 import (
@@ -68,7 +73,7 @@ func serveError(err error) error {
 
 ## Assumptions and trade-offs
 
-The process owns this server and supplies the stop context, for example from `signal.NotifyContext`. Handler request contexts should not already be canceled by that same stop signal if handlers are meant to drain. After timeout, `Close` terminates ordinary connections; it cannot join arbitrary work a handler started. Track hijacked connections and background jobs separately. Returning from `Serve` after the listener immediately fails is not treated as a clean drain.
+The process owns this server and supplies the stop context, for example from `signal.NotifyContext` (Go 1.16+). Handler request contexts should not already be canceled by that same stop signal if handlers are meant to drain. After timeout, `Close` terminates ordinary connections; it cannot join arbitrary work a handler started. `errors.Join` returns nil when all inputs are nil and preserves each non-nil error for `errors.Is`/`errors.As`. Track hijacked connections and background jobs separately. Returning from `Serve` after the listener immediately fails is not treated as a clean drain.
 
 ## Verification
 

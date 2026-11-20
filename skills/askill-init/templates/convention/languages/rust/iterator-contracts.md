@@ -1,5 +1,9 @@
 # Iterator contracts
 
+**Invariant:** A strict import stops at the first invalid or overflowing row and reports its position without consuming any later input.
+
+**Compatibility:** Portable in the supported range of Rust 2018 and later editions. Argument-position `impl Trait` was available in Rust 1.26 and `Iterator::try_fold` in 1.27, both below these edition floors. The example uses only the standard library; no iterator crate or feature determines its short-circuit behavior.
+
 ## When to read
 
 Read when accepting a lazy input, aggregating fallible items, or handing processing control to the caller.

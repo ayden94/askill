@@ -1,5 +1,9 @@
 # FastAPI streaming response ownership
 
+**Invariant:** The body is produced incrementally, bounded readers are released even on interruption, and a started response is never replaced by a second HTTP response.
+
+**Scope:** Portable iterator-owned, batched streaming. If instead borrowing a request dependency, follow the [version-specific teardown recipes](dependencies-and-lifespan.md#version-choice-yield-dependencies-on-streaming-routes).
+
 **Read when:** A response becomes incremental and reads from a cursor or other closeable producer.
 
 ## Decision
@@ -49,7 +53,7 @@ async def rows(report_id: str, actor: Annotated[Actor, Depends(require_actor)]):
 
 ## Assumptions and exceptions
 
-The report is finalized and immutable. `encoded_rows()` returns an eagerly materialized, bounded batch of `(id, complete NDJSON record bytes)`, scoped to tenant and ordered by unique ascending ID, strictly after `after_id`. The reader closes with bounded, cancellation-safe cleanup if a fetch is interrupted. If you need one consistent read of mutable data, this batched design isn't a snapshot: consider materializing an artifact, or explicitly manage cursor lifetime and test both disconnect during a fetch and failure during a socket send.
+The report is finalized and immutable. `encoded_rows()` returns an eagerly materialized, bounded batch of `(id, complete NDJSON record bytes)`, scoped to tenant and ordered by unique ascending ID, strictly after `after_id`. The reader closes with bounded, cancellation-safe cleanup if a fetch is interrupted. Do not make resource correctness depend on a particular disconnect exception: [Starlette 0.42.0](https://www.starlette.dev/release-notes/#0420-december-14-2024) introduced `ClientDisconnect` for a failed stream send on the ASGI HTTP spec 2.4+ path; older Starlette and older ASGI spec paths use disconnect listening and cancellation. The batch is already closed at every send with either implementation. If you need one consistent read of mutable data, this batched design isn't a snapshot: consider materializing an artifact, or explicitly manage cursor lifetime and test both disconnect during a fetch and failure during a socket send.
 
 ## Verification
 

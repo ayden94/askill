@@ -1,5 +1,9 @@
 # Spring Boot configuration and wiring
 
+**Invariant:** Invalid required configuration fails startup; valid typed configuration wires one reusable client that closes with its owner.
+
+**Scope:** Boot configuration binding and Bean Validation. The policy is portable; validation imports are version-sensitive. The example baseline is Boot 3.5 on Java 17+.
+
 ## Context
 
 Use this when adding an environment flag, integrating a service, or changing profile/conditional bean wiring. Deployment configuration is an input contract and should fail during startup, not on the first live request.
@@ -71,6 +75,13 @@ class BillingConfiguration {
 ```
 
 The application supplies a thread-safe, closeable `BillingClient` and a Bean Validation provider. Explicit registration makes this configuration usable in an isolated context runner; scanning is convenient when the project consistently uses it.
+
+## Version choice: validation namespace
+
+- **Boot 2.7 (if maintained):** Use `javax.validation.constraints.AssertTrue` and `javax.validation.constraints.NotNull` with the matching Boot-managed validation starter/provider. Keep the single-constructor record on Java 17 and explicitly enable the properties as above ([Boot 2.7 constructor binding](https://docs.spring.io/spring-boot/docs/2.7.18/reference/html/features.html#features.external-config.typesafe-configuration-properties.constructor-binding)).
+- **Boot >=3.0:** Use the `jakarta.validation.constraints` imports shown and the Jakarta provider managed by Boot. The namespace cutover was [Boot 3.0](https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.0-Migration-Guide#jakarta-ee), not the 3.5 example baseline. Do not mix namespace generations.
+
+Use the same startup and single-close verification below for either namespace.
 
 ## Exceptions
 

@@ -1,5 +1,9 @@
 # Publish a file only after the new contents are complete
 
+**Invariant:** A failed staged write leaves the old destination intact; successful publication reveals only the complete replacement.
+
+**Compatibility:** Version-independent recipe on Python 3.9+ and filesystems that support atomic same-directory replacement. `Path.unlink(missing_ok=True)` needs Python 3.8+, within this range.
+
 ## When to read
 
 Read when refreshing an artifact that another process may read or that must retain its prior contents if a write fails.

@@ -1,5 +1,9 @@
 # Lock scope and stale results
 
+**Invariant:** Do expensive work outside the lock, but publish its result only if the generation read under that lock is still current.
+
+**Compatibility:** Portable in the supported range of Rust 2018 and later editions. `std::sync::Mutex`, lexical guard scope, owned cloning, and `Result` propagation are sufficient; the example requires no async runtime or feature. Async callers still must avoid holding this synchronous guard across suspension.
+
 ## When to read
 
 Read before adding a `Mutex`, moving expensive work outside a critical section, or changing concurrent read/update semantics. Decide what is protected together and whether a delayed result may overwrite newer state.

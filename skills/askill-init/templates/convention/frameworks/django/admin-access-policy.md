@@ -1,5 +1,9 @@
 # Django admin access policy
 
+**Invariant:** Every admin read or mutation, including submitted relation IDs, respects the caller's permitted workspace.
+
+**Scope:** Portable across the Django admin hooks used here; applies to staff-facing `ModelAdmin` views, not a general-purpose row permission backend.
+
 **Read when:** A `ModelAdmin` is shared by staff from different workspaces or gains an action or editable relation.
 
 ## Decision

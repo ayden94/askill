@@ -1,5 +1,9 @@
 # Borrowing and ownership
 
+**Invariant:** Return a borrow for inspection; move owned data into components that must retain it beyond the borrow.
+
+**Compatibility:** Portable in the supported range of Rust 2018 and later editions. Lifetime elision for this single input borrow, slice iteration, `String::as_str`, and `PathBuf` ownership are already available at those edition floors; no optional library or feature is needed.
+
 ## When to read
 
 Read before changing a function signature or cloning data to get past the borrow checker. Find out whether the callee will only inspect the data, return a view, or retain it after the call.

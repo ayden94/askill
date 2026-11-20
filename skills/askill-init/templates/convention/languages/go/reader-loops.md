@@ -1,5 +1,9 @@
 # Process bytes before interpreting a reader error
 
+**Invariant:** Every returned byte contributes to the count before EOF or a non-EOF error determines whether the result is complete.
+
+**Compatibility:** Version-independent `io.Reader` contract and recipe on Go 1.20+; the reader's progress guarantees, not the compiler version, determine whether a no-progress policy is needed.
+
 ## When to read
 
 Read when replacing `io.Copy` with a custom loop for incremental parsing, hashing, or accounting.

@@ -1,6 +1,10 @@
 # Outbound HTTP: deadlines and dependency failures
 
-**Read when:** A Nest provider calls another service and the change affects response time, retries, cancellation, or the meaning of “not found.” Use the installed transport and its cancellation facility. The example uses Node's Fetch API and a provider-owned base URL.
+**Invariant:** Only a documented upstream absence yields `null`; caller cancellation or budget expiry stops the active call, and no retry receives a fresh budget.
+
+**Compatibility:** This is a Node Fetch example, not `@nestjs/axios` or an inbound adapter API. Node 18+ exposes `fetch` by default; Node 21 removed its experimental status. Signal composition has its own cutoff; use the older recipe below when `AbortSignal.any` is absent. See the [Node globals history](https://nodejs.org/api/globals.html#fetch).
+
+**Read when:** A Nest provider calls another service and the change affects response time, retries, cancellation, or the meaning of “not found.”
 
 ## Keep transport policy at the adapter
 
@@ -34,14 +38,34 @@ async function readQuote(sku: string, signal: AbortSignal): Promise<Quote | null
   }
   return parseQuote(await res.json()); // validate external data before returning it
 }
+```
 
-// At the operation boundary, on a runtime supporting AbortSignal.any:
-const signal = AbortSignal.any([callerSignal, AbortSignal.timeout(budgetMs)]);
-const quote = await readQuote(sku, signal);
+Use a validated base origin and a positive integer millisecond budget within Node's timer range. Apply one signal around the entire operation (including response-body reading and any permitted retries):
+
+- **Node 18.17–18.x, 20.3–20.x and 21+:** `await readQuote(sku, AbortSignal.any([callerSignal, AbortSignal.timeout(budgetMs)]))`. The [Node API history](https://nodejs.org/api/globals.html#static-method-abortsignalanysignals) records the 18.x backport and the original 20.3 release.
+- **Node 18.0–18.16, 19.x and 20.0–20.2:** compose manually, including an already-aborted caller and cleanup. On a runtime without usable global `fetch`, use the project's installed abort-capable client with the same deadline and response handling instead of this Fetch function.
+
+```ts
+const controller = new AbortController();
+const cancel = () => controller.abort(callerSignal.reason);
+if (callerSignal.aborted) {
+  cancel();
+} else {
+  callerSignal.addEventListener('abort', cancel, { once: true });
+}
+const timer = setTimeout(() => {
+  controller.abort(new DOMException('The operation timed out', 'TimeoutError'));
+}, budgetMs);
+try {
+  return await readQuote(sku, controller.signal);
+} finally {
+  clearTimeout(timer);
+  callerSignal.removeEventListener('abort', cancel);
+}
 ```
 
 Here `parseQuote` owns the payload contract. The caller or exception mapper decides how to surface an aborted or unavailable dependency; it does not swallow it or log authorization headers. A timeout represents an unknown outcome for a remote write. Do not retry a charge or order creation on timeout unless the remote protocol makes replay safe. For read retries, consume the original time budget instead of granting a fresh budget per attempt.
 
 ## Verification
 
-Use a controllable HTTP fixture with success, documented not-found, `503`, malformed success body, and stalled response cases. Only `404` may produce `null`. Cancel the caller while the response is stalled and observe that the request ends without another attempt. For a retried write, test the case where the remote side commits but its response never reaches the client; verify one durable effect or leave retries disabled.
+Run the same HTTP fixture on each supported signal branch: valid success, documented `404`, `503`, malformed success body, and a stalled response body. Only `404` may produce `null`. Test an already-aborted caller, caller cancellation while stalled, and budget expiry without caller cancellation; the call must stop with no extra attempt after cancellation or budget expiry. For a retried write, test a remote commit followed by a lost response; verify one durable effect or leave retries disabled.

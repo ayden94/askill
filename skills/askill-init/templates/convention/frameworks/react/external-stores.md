@@ -1,5 +1,9 @@
 # External store snapshots
 
+**Invariant:** Render a stable snapshot until the source changes, unsubscribe on teardown, and use the same neutral snapshot on the server and during hydration.
+
+The three-argument [`useSyncExternalStore`](https://react.dev/reference/react/useSyncExternalStore) contract is portable across React 18.x and 19.x; browser availability belongs in the client snapshot, not the server snapshot.
+
 ## When to read
 
 Adapt a browser API or other independently mutable store that React does not own.

@@ -1,5 +1,9 @@
 # Spring Boot scheduled work and overlap
 
+**Invariant:** A slow run does not queue overlapping local batches, and concurrent replicas cannot overwrite rows that left the eligible state.
+
+**Scope:** Portable for synchronous Spring `@Scheduled` fixed-delay work; it is not a guarantee for async/reactive callbacks or a cluster-wide lock.
+
 **Read when:** A periodic operation runs longer than its interval or begins running on multiple application replicas.
 
 ## Decision

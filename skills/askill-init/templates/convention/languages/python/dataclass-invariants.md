@@ -1,5 +1,9 @@
 # Snapshot mutable inputs before validating a value dataclass
 
+**Invariant:** A valid `ExportColumns` retains its nonempty, unique names even if its caller later mutates the source collection.
+
+**Compatibility:** Version-independent recipe on Python 3.9+; the floor here covers evaluated built-in generic annotations, not a change to `frozen=True`.
+
 ## When to read
 
 Read when a dataclass is meant to be a stable value but is constructed from a mutable collection.

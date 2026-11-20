@@ -1,5 +1,11 @@
 # Extractors and rejections
 
+**Invariant:** Run parts extractors before one body consumer, preserve meaningful rejection categories and reject before writing.
+
+**Compatibility:** The built-in extractor and `Result<Json<_>, JsonRejection>` pattern is stable for Axum 0.6–0.8; custom extractor signatures are version-gated. The [`axum-core` 0.4 and 0.5 changes](https://github.com/tokio-rs/axum/blob/axum-v0.8.0/axum-core/CHANGELOG.md) track Axum 0.7 and 0.8 respectively.
+
+**Acceptance check:** Mounted requests exercise 415/400/422/413 for the distinct JSON failures, perform no rejected writes, and deliver validated domain values on success.
+
 ## When to read
 
 Read when changing handler arguments, accepting a body, validating decoded inputs, or promising a custom validation response.
@@ -64,6 +70,14 @@ async fn create(
 ```
 
 `Result` handles only the extractor it wraps. If a path or query also promises the custom envelope, translate that extractor's rejection separately. An endpoint that repeats this policy can use a shared custom extractor. Do not put raw rejection text or input into the public response by default.
+
+Use the handler-local `Result` recipe above to avoid a trait implementation across versions. If you wrap it in a shared JSON extractor, keep the same mapping and implement the signature for the pinned line:
+
+- **Axum 0.6.x:** `#[axum::async_trait] impl<S, B> FromRequest<S, B> for CheckedJson` with the relevant body bounds and `async fn from_request(req: http::Request<B>, state: &S) -> Result<Self, Self::Rejection>`.
+- **Axum 0.7.x:** Keep `#[axum::async_trait]`, use `impl<S> FromRequest<S>` and `async fn from_request(req: axum::extract::Request, state: &S) -> Result<Self, Self::Rejection>`.
+- **Axum 0.8.x:** Use the 0.7 request/trait shape with native `async fn`, **without** `#[axum::async_trait]`. Axum 0.8.0 requires Rust 1.75; follow the selected patch's toolchain floor.
+
+In each version, call `Json::<CreateBody>::from_request(req, state).await`, wrap its success and map its rejection as in the handler. Set `type Rejection = ApiError`; use `S: Send + Sync` for the shared state.
 
 ## Exceptions and tradeoffs
 

@@ -1,5 +1,11 @@
 # Resource visibility
 
+**Invariant:** Return 403 only when the caller may discover the row but cannot perform the requested action.
+
+**Compatibility:** Stable application policy in Axum 0.6–0.8; [`Extension<Actor>`](https://docs.rs/axum/0.8.0/axum/struct.Extension.html) and `State` supply actor and dependencies, not visibility or permissions. Use the [path syntax appropriate to the router version](router-composition-and-state.md).
+
+**Acceptance check:** Absent and hidden yield identical 404 responses; visible-but-denied yields 403; only the authorized case performs export work.
+
 ## When to read
 
 Read when an authenticated endpoint needs a policy for missing, hidden, and discoverable-but-forbidden resources.

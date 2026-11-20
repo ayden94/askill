@@ -1,5 +1,11 @@
 # Call correlation
 
+**Invariant:** The edge establishes one request ID before guarded routes, and logs and response headers use that same ID.
+
+**Compatibility:** Plugin-dependent on JVM Ktor 2.x and 3.x: install the matching `ktor-server-call-id` and `ktor-server-call-logging` artifacts and an MDC-capable backend. The [Ktor 3.0 migration](https://ktor.io/docs/migrating-3.html#calllogging-plugin-package-has-been-renamed) changes the logging package, not the correlation policy.
+
+**Acceptance check:** Two calls with the same untrusted header, including a guarded rejection, have distinct generated response IDs and matching captured MDC values.
+
 ## When to read
 
 Read when logs, response headers, and downstream work should share a request correlation ID.
@@ -15,6 +21,11 @@ get("/widgets") {
     call.respond(widgets.list())
 }
 ```
+
+- **Ktor 2.x:** Import `io.ktor.server.plugins.callloging.*` (the historical spelling).
+- **Ktor 3.x:** Import `io.ktor.server.plugins.calllogging.*`.
+
+Both branches use `io.ktor.server.plugins.callid.*` and the same [`CallId` setup](https://ktor.io/docs/server-call-id.html).
 
 **Right —** establish the ID in the application pipeline and have logging read it from the same call.
 

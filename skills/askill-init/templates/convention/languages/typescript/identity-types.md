@@ -1,5 +1,9 @@
 # Keep unrelated identifiers from becoming interchangeable
 
+**Invariant:** A syntactically valid team ID can be created at the conversion boundary, but neither a plain string nor an invoice ID can reach a typed team API accidentally.
+
+**Compatibility — portable within TypeScript 2.7+ with `strict` and ES2015+ runtimes:** [`unique symbol`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-7.html#unique-symbol) supplies declaration identity; the `declare` symbols and brands have no runtime representation or `Symbol()` dependency. The original regex used the ES2015 `u` flag; the ASCII-only grammar below needs no Unicode regex features.
+
 ## When to read
 
 Read when APIs accept identifier strings from multiple namespaces and an accidental cross-call would be valid structurally.
@@ -32,7 +36,7 @@ export type TeamId = string & { readonly [teamTag]: true };
 export type InvoiceId = string & { readonly [invoiceTag]: true };
 
 export function parseTeamId(raw: string): TeamId {
-  if (!/^team_[0-9]+$/u.test(raw) || /\s/u.test(raw)) {
+  if (!/^team_[0-9]+$/.test(raw)) {
     throw new TypeError("expected a team identifier");
   }
   return raw as TeamId;

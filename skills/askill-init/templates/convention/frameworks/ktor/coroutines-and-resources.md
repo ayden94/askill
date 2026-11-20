@@ -1,5 +1,11 @@
 # Coroutine and resource lifetimes
 
+**Invariant:** Await work required by the response and close shared dependencies only at the lifecycle that owns them.
+
+**Compatibility:** [Structured concurrency](https://kotlinlang.org/docs/coroutines-basics.html#coroutine-scope-and-structured-concurrency) is a Kotlin coroutine rule, not an engine guarantee about socket disconnects. Ktor 2.x and 3.x differ in [application monitor ownership](https://ktor.io/docs/migrating-3.html#applicationengine-applicationenvironment-and-application).
+
+**Acceptance check:** Failure of one child releases its sibling before the request completes; stopping the application closes its owned client once and leaves an injected client open.
+
 ## When to read
 
 Read when starting concurrent work in a route, invoking a blocking client, or introducing a shared resource that must shut down with the application.
@@ -55,6 +61,9 @@ fun Application.weatherModule() {
     }
 }
 ```
+
+- **Ktor 2.x:** Within `Application.weatherModule`, use `environment.monitor.subscribe(ApplicationStopped) { client.close() }`.
+- **Ktor 3.x:** Use `monitor.subscribe(ApplicationStopped) { client.close() }` as above.
 
 This module owns the client it allocates. A module that receives a client from an outer runtime should not close it independently. Configure request and connection timeouts at the client boundary.
 

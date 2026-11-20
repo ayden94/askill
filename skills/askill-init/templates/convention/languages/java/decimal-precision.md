@@ -1,5 +1,9 @@
 # Decimal precision
 
+**Invariant:** Parse decimal input exactly and apply the declared scale and rounding policy at the documented boundary, not at an implicit binary conversion.
+
+**Compatibility:** Portable in the supported range. `BigDecimal(String)` and `setScale(int, RoundingMode)` are available on Java 8 and later, with no newer language or library features. Currency scale and rounding policy are contract choices, not JDK-version choices.
+
 ## When to read
 
 Read when parsing exact decimal quantities or changing rounding, equality, and storage of money or rates.

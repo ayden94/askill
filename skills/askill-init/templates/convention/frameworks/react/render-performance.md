@@ -1,10 +1,14 @@
 # Responsive rendering
 
+**Invariant:** Every keystroke updates the controlled input immediately; only the measured, non-urgent results view may lag and it must converge on the final query.
+
+The one-argument `useDeferredValue` and the `memo` bailout in this recipe are portable across React 18.x and 19.x with a concurrent root.
+
 ## When to read
 
 Keep urgent input responsive when a measured bottleneck is rendering a secondary React view.
 
-**Assumptions:** The search results are local, expensive to render, and allowed to lag briefly during typing. `Results` receives a stable `items` array; the example targets React 18+.
+**Assumptions:** The search results are local, expensive to render, and allowed to lag briefly during typing. `Results` receives a stable `items` array.
 
 Profile the interaction before optimizing. Keep controlled input state immediate; defer the value that drives the slower, interruptible subtree. Avoid recreating props that defeat the memoized subtree's bailout. Tell users when the results are catching up if the difference is perceptible.
 

@@ -1,5 +1,9 @@
 # Concurrent state transitions
 
+**Invariant:** For each non-null ownership claim, exactly one concurrent caller can win while the key is unclaimed.
+
+**Compatibility:** Portable in the supported range. The example uses the atomic `ConcurrentMap.putIfAbsent` contract (available since Java 5), not a newer `Map` default method or an implementation-specific locking scheme. The non-null value precondition makes a null return an unambiguous win.
+
 ## When to read
 
 Read when multiple threads register a key, acquire an in-process claim, or update a shared invariant.

@@ -1,5 +1,9 @@
 # Deterministic coroutine and stream tests
 
+**Invariant:** Test retry and event behavior on a controlled scheduler, with an active subscriber and deterministic cleanup.
+
+**Compatibility:** Version-sensitive in `kotlinx-coroutines-test`. [`runTest`, `StandardTestDispatcher` and `TestCoroutineScheduler`](https://github.com/Kotlin/kotlinx.coroutines/blob/1.6.4/kotlinx-coroutines-test/MIGRATION.md) arrived with 1.6.0; [`backgroundScope`](https://github.com/Kotlin/kotlinx.coroutines/blob/1.6.4/CHANGES.md#version-164) arrived in 1.6.4. On 1.6.0–1.6.3 launch the collector directly in the test and `cancelAndJoin()` it in `finally`. In an existing [JVM 1.5.x test setup](https://github.com/Kotlin/kotlinx.coroutines/blob/1.5.2/kotlinx-coroutines-test/README.md), use `runBlockingTest` with the same `TestCoroutineDispatcher` injected into the client; use its `advanceTimeBy` and `runCurrent`, and a fixture-owned collector cancelled and joined in `finally`. Check the retry just before and at its deadline and require an active collector before emission in all cases. Resolve compatible core/test artifacts, Kotlin compiler and test runner separately from the application's target; the coroutines JVM artifacts changed their bytecode target to Java 8 in [1.5.0](https://github.com/Kotlin/kotlinx.coroutines/blob/1.6.4/CHANGES.md#version-150).
+
 ## When to read
 
 Read when verifying suspend code, retry timing, cancellation, `StateFlow`, or event delivery. Use the configured runner and compatible `kotlinx-coroutines-test` version; examples assume `runTest`, `TestCoroutineScheduler`, and `backgroundScope` are available. Test names describe unit, scenario, and expected behavior; blank lines separate Arrange, Act, and Assert.

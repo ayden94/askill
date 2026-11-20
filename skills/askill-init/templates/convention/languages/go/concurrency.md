@@ -1,5 +1,9 @@
 # Give every goroutine a stop and join path
 
+**Invariant:** The owner can unblock every worker and observe completion before assuming its output is closed.
+
+**Compatibility:** The forwarding recipe is version-independent on Go 1.20+. For joining multiple senders, Go 1.25 adds `sync.WaitGroup.Go` ([Go 1.25 release notes](https://go.dev/doc/go1.25#syncpkgsync)); Go 1.20–1.24 use `Add` before launch and `Done` in the goroutine.
+
 ## When to read
 
 Read when spawning a goroutine, returning a channel, or making a blocking call that must stop when its caller is done.
@@ -81,6 +85,36 @@ Both blocking points have an escape path, and the worker acknowledges shutdown a
 ## Edge cases and exceptions
 
 If cancellation and a send are both ready, `select` can still complete that send. Do not promise that cancellation alone synchronizes delivery; wait for completion before asserting no new sends. A separate upstream producer needs its own cancellation path; stopping this forwarding worker doesn't automatically unblock the producer. For multiple senders, close the shared output only after all senders have joined.
+
+## Compatibility: join multiple senders
+
+With `import "sync"`, use one local group; the coordinator below owns `out`. Each `send` (a `func()`) uses the cancellation-aware send pattern above and must not panic. The snippets are function bodies.
+
+```go
+// Go 1.20–1.24
+var workers sync.WaitGroup
+for _, send := range senders {
+	workers.Add(1)
+	go func(run func()) {
+		defer workers.Done()
+		run()
+	}(send)
+}
+workers.Wait()
+close(out)
+```
+
+```go
+// Go 1.25+ toolchain and standard library; declare go 1.25 or later
+var workers sync.WaitGroup
+for _, send := range senders {
+	workers.Go(send)
+}
+workers.Wait()
+close(out)
+```
+
+For either recipe, make two senders block on an undrained `out` or their shared cancellation signal. After both signal entry, cancel and wait for the coordinator with a deadline. **Pass:** both senders finish and the receiver observes closure without any sender racing the close.
 
 ## Verification
 

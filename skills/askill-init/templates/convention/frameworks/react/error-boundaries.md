@@ -1,5 +1,9 @@
 # Error boundaries
 
+**Invariant:** An unexpected descendant render failure replaces only the chart subtree; a successful retry remounts it with replacement data while adjacent controls remain usable.
+
+The class boundary and key-based reset are portable across React 18.x and 19.x. Report in `componentDidCatch` for this recipe; do not require identical console output or root-level error hooks across versions.
+
 ## When to read
 
 Contain an unexpected descendant render failure without taking down adjacent tools, and define what Retry remounts.

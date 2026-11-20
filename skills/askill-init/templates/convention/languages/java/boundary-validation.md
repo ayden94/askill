@@ -1,5 +1,9 @@
 # Boundary validation and absence
 
+**Invariant:** Only contractually absent input defaults or yields not-found; malformed values and failed reads remain distinct failures.
+
+**Compatibility:** Portable in the supported range of Java 8 and later: the lookup uses [`Optional.ofNullable`](https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html) from Java 8, and the parser and checked exception require no newer API or syntax.
+
 ## When to read
 
 Read before changing input from HTTP, configuration, or another service, or redesigning a lookup that can return no row. Use the wire schema and the project's error translation as the source of truth.

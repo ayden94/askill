@@ -1,5 +1,11 @@
 # Cursor pagination
 
+**Invariant:** A validated cursor resumes strictly after the last returned row under the original scope and filter.
+
+**Compatibility:** Stable application/store policy across Ktor 2.x and 3.x. [`queryParameters` and `getAll`](https://ktor.io/docs/server-requests.html#query_parameters) supply raw tokens; authenticity and total ordering are not Ktor or serialization-plugin behavior.
+
+**Acceptance check:** Traverse tied keys across a deletion without skipping remaining rows; changed-scope and repeated tokens return 400 before the list query.
+
 ## When to read
 
 Read when a list needs a continuation token that still works if earlier rows are removed.

@@ -1,5 +1,9 @@
 # Stream reductions
 
+**Invariant:** An ordered reduction preserves encounter order and duplicates when promised, without sharing mutable accumulators across partitions.
+
+**Compatibility:** Version-sensitive. Java 11+ can use [`String::strip`](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html#strip()) and [local `var`](https://openjdk.org/jeps/286). On Java 8–10, declare `List<String> names` and map `name -> name.replaceAll("\\A\\p{javaWhitespace}+|\\p{javaWhitespace}+\\z", "")`; keep the same [Java 8 collector](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Collectors.html). In both versions check empty inputs, duplicates, order, Unicode edge whitespace, and the promised result mutability.
+
 ## When to read
 
 Read when adding a reduction, switching to parallel streams, or using a pipeline to build a result in encounter order.

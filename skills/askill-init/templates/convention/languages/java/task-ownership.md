@@ -1,5 +1,9 @@
 # Task ownership and interruption
 
+**Invariant:** Interruption is not success: cancel exclusive child work when its waiter is interrupted, without letting a departing waiter cancel shared work.
+
+**Compatibility:** Portable in the supported range. The example uses `Future.get`, `Future.cancel`, and thread interruption from the Java 5 concurrency API; it does not depend on newer executor lifecycles or task abstractions. The executor and worker still have to honor the ownership and cooperation contract.
+
 ## When to read
 
 Read when waiting on futures, adapting blocking work, or defining who cancels or shuts down an executor.

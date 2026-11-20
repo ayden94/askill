@@ -1,5 +1,9 @@
 # Roll back partially acquired resources with ExitStack
 
+**Invariant:** Every successfully entered context is exited in reverse acquisition order, including when a later acquisition fails.
+
+**Compatibility:** Version-independent synchronous recipe on Python 3.9+. Use `AsyncExitStack` for async managers; neither stack owns cleanup for a context whose entry itself fails.
+
 ## When to read
 
 Read when opening a runtime-sized collection of files or entering a group of optional context managers.

@@ -1,5 +1,9 @@
 # Flow failure and retry boundaries
 
+**Invariant:** Retry only documented recoverable upstream failures; neither downstream failures nor cancellation may trigger retry or successful fallback.
+
+**Compatibility:** Portable in the supported range for projects using stable Flow with `kotlinx-coroutines-core` 1.3.0 or later. [`catch` and `retryWhen`](https://github.com/Kotlin/kotlinx.coroutines/blob/1.6.4/CHANGES.md#version-130-m2) were already in the 1.3.0 release cycle; they do not require a newer sharing API or particular JVM bytecode level. The `IOException` example is JVM-specific; use the equivalent typed adapter failure on another target.
+
 ## When to read
 
 Read when adding stream recovery, retry, or fallback, especially before converting a cold source into shared state.

@@ -1,5 +1,9 @@
 # Encode the wire record, not the dataclass layout
 
+**Invariant:** The emitted quote has exactly the documented versioned fields and finite decimal text, regardless of internal dataclass fields.
+
+**Compatibility:** Version-independent standard-library recipe on Python 3.9+; the record version is a consumer contract, not the interpreter version.
+
 ## When to read
 
 Read when exposing an internal record through JSON or persisting it beyond the lifetime of the current release.

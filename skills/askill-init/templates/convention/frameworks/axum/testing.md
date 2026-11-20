@@ -1,5 +1,11 @@
 # Testing Axum
 
+**Invariant:** Exercise the production router with raw inputs and check both the response and effects under a finite read budget.
+
+**Compatibility:** Stable Tower [`ServiceExt::oneshot`](https://docs.rs/tower/0.5.2/tower/util/trait.ServiceExt.html#method.oneshot) recipe in Axum 0.6–0.8 with a compatible Tower `util` feature; Tokio provides the test runtime. Body collection depends on the Axum/Hyper body generation.
+
+**Acceptance check:** Under each body API, the malformed authenticated request reaches extraction, returns the exact public error and writes nothing; a valid response fits the cap and has the expected fields.
+
 ## When to read
 
 Read when changing a mounted route, an extractor, middleware, error conversion, or the side effects of an HTTP operation.
@@ -61,6 +67,12 @@ assert_eq!(payload["id"], serde_json::json!(42));
 ```
 
 For a pending response such as a stream, test bounded receipt of frames instead of collecting the whole stream. A byte limit alone cannot time out an idle body.
+
+- **Axum 0.6.x:** Use `hyper::body::to_bytes(http_body::Limited::new(response.into_body(), LIMIT)).await` (Hyper 0.14 / `http-body` 0.4).
+- **Axum 0.7.0–0.7.1:** Use `http_body_util::Limited::new(response.into_body(), LIMIT).collect().await` with `BodyExt` in scope, then `.to_bytes()` on the collection.
+- **Axum 0.7.2–0.8.x:** Use the bounded `axum::body::to_bytes` above; see the [0.7.2 changelog](https://github.com/tokio-rs/axum/blob/axum-v0.8.0/axum/CHANGELOG.md#072-03-december-2023).
+
+For each alternative use the same limit and decode/assert the same media type, body and effects. Use `axum::http` types, or select a direct `http` dependency compatible with the Axum pin.
 
 ## Exceptions and tradeoffs
 

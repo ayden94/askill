@@ -1,5 +1,9 @@
 # FFI buffer contracts
 
+**Invariant:** A safe wrapper passes only the bytes covered by the live borrow and upholds the foreign function's ABI and lifetime requirements.
+
+**Compatibility:** Version-sensitive in compiler and edition. A Rust 2021 crate targeting a compiler before 1.82 can use `extern "C"` as shown. [Rust 1.82](https://doc.rust-lang.org/edition-guide/rust-2024/unsafe-extern.html) permits `unsafe extern "C"` in all editions; [Rust 2024, available since 1.85](https://blog.rust-lang.org/2025/02/20/Rust-1.85.0/), requires it. On that branch change only the block header to `unsafe extern "C"`; leave `checksum` unsafe to call and keep the wrapper's checked pointer/length relationship. Link both against the same ABI-matched shim and check empty and nonempty lengths.
+
 ## When to read
 
 Read when adapting a Rust slice to a synchronous foreign function that borrows a pointer and length. Confirm the actual ABI, pointer retention, mutation, and zero-length behavior in the foreign declaration.

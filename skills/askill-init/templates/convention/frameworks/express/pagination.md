@@ -1,10 +1,14 @@
 # Cursor pagination
 
+**Invariant:** A continuation reads strictly after the last returned tuple within the same authorized scope and ordering, even when rows share a timestamp.
+
+The tuple and cursor policy are portable across Express 4.x and 5.x. Make the flat query grammar explicit with `app.set('query parser', 'simple')` on either major rather than inheriting the Express 4.x extended or 5.x simple default; validate repeated values and do not mutate `req.query` ([Express migration guide](https://expressjs.com/en/guide/migrating-5.html#reqquery)). Register the two async functions directly on 5.x or use `app.get('/orders', forwardAsync(requireActor), forwardAsync(listOrders))` on 4.x, with the adapter and source in [Errors and response ownership](errors-and-responses.md).
+
 ## When to read
 
 Add a next-page contract for a long, ordered collection that can gain or lose rows.
 
-**Assumptions:** Express 5 with a validated query parser. Tenant, filter, timestamp and unique ID use consistent storage comparison semantics; timestamps are immutable. This endpoint promises forward traversal, not snapshot isolation.
+**Assumptions:** This application uses a flat query grammar. Tenant, filter, timestamp and unique ID use consistent storage comparison semantics; timestamps are immutable. This endpoint promises forward traversal, not snapshot isolation.
 
 Sort on a unique tuple with a tie-breaker; encode that same tuple in the cursor, including full stored precision. Bind cursors to the filter, ordering and authorized scope. Bound the page size and reject malformed or incompatible cursors before querying. Request one extra row to determine whether there is more.
 
@@ -21,7 +25,7 @@ const rows = await orders.find({
 ## Good
 
 ```js
-app.get('/orders', requireActor, async (req, res) => {
+async function listOrders(req, res) {
   const actor = res.locals.actor;
   // Returns null for bad input, a limit outside 1–100, or mismatched cursor scope.
   const page = parseOrdersPage(req.query, actor.tenantId);
@@ -34,10 +38,11 @@ app.get('/orders', requireActor, async (req, res) => {
   });
   const items = rows.slice(0, page.limit);
   const nextCursor = rows.length > page.limit
-    ? encodeOrdersCursor(items.at(-1), page.filter, actor.tenantId)
+    ? encodeOrdersCursor(items[items.length - 1], page.filter, actor.tenantId)
     : null;
   return res.json({ items: items.map(toOrderSummary), nextCursor });
-});
+}
+app.get('/orders', requireActor, listOrders);
 ```
 
 The cursor describes the last returned row, not the extra one. The repository still applies actor scope on every read; a cursor is not authorization. Offset pagination can be reasonable for small lists that require jumping to a page. If an export needs an immutable view, use an explicit snapshot contract instead of assuming a cursor freezes the dataset.
@@ -46,3 +51,4 @@ The cursor describes the last returned row, not the extra one. The repository st
 
 1. Seed several rows with identical timestamps across a page boundary. Traverse with a small limit and assert every authorized row appears exactly once in order and the last cursor is null.
 2. Insert a newer row and remove the previous boundary row between requests; confirm the continuation still uses the tuple. Verify parser rejection for malformed, over-limit and mismatched-filter cursors.
+3. On either major, verify `?limit=2&limit=3` is rejected without a query and an unexpected list rejection reaches the same error mapper once.

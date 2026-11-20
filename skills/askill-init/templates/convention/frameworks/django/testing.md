@@ -1,5 +1,9 @@
 # Django testing
 
+**Invariant:** A passing test observes the real boundary it claims to protect, distinguishing callback execution from a durable commit.
+
+**Scope:** Portable for Django 4.2 and newer with the built-in test harness; `captureOnCommitCallbacks()` was introduced in [Django 3.2](https://docs.djangoproject.com/en/3.2/releases/3.2/#tests), not 5.2.
+
 ## Context
 
 Choose the cheapest harness that includes the boundary being claimed. Most view regressions need URL routing and middleware, not a live server. A database commit or lock claim needs more than `TestCase`'s enclosing transaction.

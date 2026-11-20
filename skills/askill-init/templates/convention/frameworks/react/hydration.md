@@ -1,5 +1,9 @@
 # Hydration and first render
 
+**Invariant:** Server markup and the first hydrating render agree before browser-only formatting changes the label.
+
+The [`hydrateRoot`](https://react.dev/reference/react-dom/client/hydrateRoot) matching requirement and this post-hydration Effect are portable across React DOM 18.x and 19.x; mismatch diagnostics may differ, so assert no mismatch rather than matching warning wording.
+
 ## When to read
 
 Render UI on the server when browser-only state, time zones, or changing data can produce a different first client render.

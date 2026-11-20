@@ -1,5 +1,9 @@
 # Model mutually exclusive outcomes with discriminated unions
 
+**Invariant:** Each handled outcome carries exactly the data its consumer needs; adding a variant forces closed consumers to reconsider it.
+
+**Compatibility — portable within TypeScript 4.9+ with `strict`:** A direct switch on the tagged object and a [`never` exhaustiveness check](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#exhaustiveness-checking) work without newer destructuring-based narrowing or a matching library. The emitted switch needs no runtime API. The error-prone contrast uses `??` syntax; compile it for the actual target or spell out its nullish guard on pre-ES2020 engines.
+
 ## When to read
 
 Read when a status field controls which data is available, a result needs another branch, or an API uses nullable fields to imply mutually exclusive outcomes.

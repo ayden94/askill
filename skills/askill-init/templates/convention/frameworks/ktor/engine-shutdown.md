@@ -1,5 +1,11 @@
 # Engine shutdown
 
+**Invariant:** Stop admission and drain accepted calls before releasing their dependencies, within the deployment deadline.
+
+**Compatibility:** Engine-dependent behavior and Ktor API differences. JVM [EngineMain deployment settings](https://ktor.io/docs/server-configuration-file.html) are separate from [Ktor 3.0's embedded server and application lifecycle changes](https://ktor.io/docs/migrating-3.html).
+
+**Acceptance check:** On the real engine, an accepted call that finishes within the window completes before store closure; an over-budget call does not prevent timely process exit.
+
 ## When to read
 
 Read when changing deployment termination or configuring an EngineMain-based JVM application.
@@ -20,6 +26,11 @@ ktor.deployment {
     shutdownTimeout = 10000
 }
 ```
+
+- **Ktor 2.x:** Subscribe via `environment.monitor.subscribe(ApplicationStopped) { store.close() }`; `embeddedServer` returns `ApplicationEngine`.
+- **Ktor 3.x:** Subscribe via `monitor.subscribe(ApplicationStopped) { store.close() }`; `embeddedServer` returns `EmbeddedServer`.
+
+In either embedded branch, keep the returned owner and call its `stop(5_000, 10_000)` from the controlled shutdown path, rather than assuming EngineMain loaded these values. Verify the selected engine's implementation and allow time for shutdown hooks and cleanup.
 
 ```kotlin
 fun Application.widgetModule() {

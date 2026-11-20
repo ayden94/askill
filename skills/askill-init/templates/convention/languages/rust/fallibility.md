@@ -1,5 +1,9 @@
 # Fallibility at boundaries
 
+**Invariant:** Represent missing data separately from invalid data and preserve the original error for a failed read that is not absence.
+
+**Compatibility:** Version-sensitive if the crate supports older Rust 2018 toolchains: [`Option::transpose`](https://doc.rust-lang.org/std/option/enum.Option.html#method.transpose) stabilized in Rust 1.33. On Rust 1.31–1.32, replace `raw.map(...).transpose()` with `match raw { None => Ok(None), Some(text) => parse_port(text).map(Some) }`, extracting the same validating closure into `parse_port`. The [`fs::read_to_string`](https://doc.rust-lang.org/std/fs/fn.read_to_string.html) sample is already available from Rust 1.26 and needs no change in either branch. Both pass the same omitted, invalid, overflow and read-error cases. If the edition floor already exceeds these cutoffs, use the shown implementation.
+
 ## When to read
 
 Read when parsing configuration, returning a lookup result, introducing `?`, or handling failed I/O. Identify which failures an ordinary caller can recover from and which are actual invariant violations.

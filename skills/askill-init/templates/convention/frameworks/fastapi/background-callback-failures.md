@@ -1,5 +1,9 @@
 # FastAPI background callback failures
 
+**Invariant:** An anticipated failure in one best-effort callback does not skip an independent callback or change the already-sent response.
+
+**Scope:** Portable for FastAPI's Starlette-backed, in-process [background tasks](https://www.starlette.dev/background/); not a durable job API.
+
 **Read when:** One response schedules multiple disposable callbacks or a failed callback silently prevents later cleanup.
 
 ## Decision

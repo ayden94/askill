@@ -1,5 +1,9 @@
 # Flow sharing and lifecycle
 
+**Invariant:** Active collectors share one upstream subscription owned by the screen; the last departure starts a bounded grace period, then the upstream closes and the cached value resets.
+
+**Compatibility:** Version-sensitive. [`stateIn`](https://github.com/Kotlin/kotlinx.coroutines/blob/1.6.4/CHANGES.md#version-140-m1) and the [millisecond `WhileSubscribed` policy](https://github.com/Kotlin/kotlinx.coroutines/blob/1.4.0/kotlinx-coroutines-core/common/src/flow/SharingStarted.kt) shipped in `kotlinx-coroutines-core` 1.4.0; the sample's [trailing commas](https://kotlinlang.org/docs/whatsnew14.html#trailing-comma) separately require Kotlin 1.4 syntax. On a supported pre-1.4 core with Flow, use a single screen-scope coordinator to serialize subscription changes. Start one upstream job on demand and broadcast updates to per-subscriber conflated channels seeded with the cached value (`null` initially). On last departure start a 5-second timer; invalidate it if someone resubscribes. On expiry, cancel and join the upstream and reset the cache before starting another job; ignore any queued updates from the stopped job. Close the channels and cancel child work on screen shutdown. Run the same two-collector, grace-period, reset, and scope-cancellation checks on either design.
+
 ## When to read
 
 Read when several collectors observe one upstream connection or a screen should stop work when it loses its last collector.

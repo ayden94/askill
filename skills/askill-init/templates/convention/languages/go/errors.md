@@ -1,5 +1,9 @@
 # Preserve error identity where callers act on it
 
+**Invariant:** Callers can match the public absence sentinel and inspect intentionally exposed causes without relying on error text.
+
+**Compatibility:** Version-independent recipe on Go 1.20+; `%w`, `errors.Is`, and `errors.As` date to [Go 1.13](https://go.dev/doc/go1.13#error_wrapping), and `os.ReadFile` and `io/fs` to [Go 1.16](https://go.dev/doc/go1.16#library).
+
 ## When to read
 
 Read when adding context to an error, classifying a dependency failure, or deciding whether a resulting error should be part of a package's public contract.

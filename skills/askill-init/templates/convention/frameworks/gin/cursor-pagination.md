@@ -1,5 +1,11 @@
 # Cursor pagination
 
+**Invariant:** A continuation resumes strictly after the last returned key in the same authenticated query scope.
+
+**Compatibility:** Stable application and database policy; the Gin 1.x example uses [`GetQueryArray`](https://pkg.go.dev/github.com/gin-gonic/gin@v1.11.0#Context.GetQueryArray) only to preserve scalar parameter multiplicity. Neither cursor encoding nor keyset ordering depends on Gin.
+
+**Acceptance check:** Traverse tied keys with an intervening newer insertion without repeating or skipping original rows; reject a tampered, repeated, or cross-scope token before querying.
+
 ## When to read
 
 Read when clients traverse a list that can change between requests.

@@ -1,5 +1,9 @@
 # FastAPI OpenAPI operation IDs
 
+**Invariant:** Every published operation has a unique stable ID independent of Python handler names or router organization.
+
+**Scope:** Portable explicit `operation_id` for FastAPI OpenAPI generation. Do not rely on the version-specific implementation of default ID generation.
+
 **Read when:** Moving an endpoint between routers, renaming its handler, or publishing an OpenAPI schema consumed by code generators.
 
 ## Decision

@@ -1,5 +1,9 @@
 # Render purity and state identity
 
+**Invariant:** Visible rows derive from the current render inputs, and each mounted editor's draft belongs to its product rather than a list position.
+
+Render purity, Hook ordering, and stable sibling keys are portable across React 18.x and 19.x; an unmounted editor does not retain its own local state on either line.
+
 **Assumptions:** Product IDs are stable and unique among siblings; `PriceEditor` owns a local draft that belongs to one product. Filtering intentionally unmounts hidden editors in this screen.
 
 Derive visible rows from props and filters during render; do not run an Effect to copy them into state. Keep render free of mutations and I/O because React may render again or discard a render. Keep Hooks above conditional exits. Lift writable state to the nearest common owner, store selection by ID, and give stateful list children stable keys. Do not mutate input arrays while sorting.

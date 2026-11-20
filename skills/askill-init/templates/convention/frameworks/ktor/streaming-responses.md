@@ -1,5 +1,11 @@
 # Streaming responses
 
+**Invariant:** Open and close the source inside the response producer, and do not attempt a second response after commitment.
+
+**Compatibility:** Portable Ktor 2.x/3.x producer pattern using [`respondBytesWriter`](https://api.ktor.io/3.0.x/ktor-server-core/io.ktor.server.response/respond-bytes-writer.html). Use byte-array writes and `flush()` with `io.ktor.utils.io.*`; the [3.0 `kotlinx-io` migration](https://ktor.io/docs/migrating-3.html#migration-to-kotlinx-io) affects packet/source types, which this recipe does not use. Flush timing and disconnect delivery remain engine/proxy dependent.
+
+**Acceptance check:** A socket client receives the first line before the source completes, and the source closes after disconnect or failure.
+
 ## When to read
 
 Read when a route returns a large export and the client should see data as it becomes ready.

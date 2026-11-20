@@ -1,5 +1,11 @@
 # Tower layer ordering
 
+**Invariant:** An outer producer makes request metadata available to inner layers, and an outer observer sees inner early responses.
+
+**Compatibility:** Stable [Tower `ServiceBuilder` order](https://docs.rs/tower/0.5.2/tower/builder/struct.ServiceBuilder.html#order) versus nested Axum `Router::layer` order. The ordering does not change; Axum's `from_fn` signature changes at 0.7.
+
+**Acceptance check:** Success and inner-guard rejection each produce one record with the expected ID and status; reversing producer and observer makes the test fail.
+
 ## When to read
 
 Read when one layer needs another's request extension or must observe its early responses.
@@ -30,6 +36,9 @@ async fn observe_request(req: Request, next: Next) -> Response {
     response
 }
 ```
+
+- **Axum 0.6.x:** Use [`from_fn` with `Request<B>` and `Next<B>`](https://docs.rs/axum/0.6.20/axum/middleware/fn.from_fn.html), e.g. `async fn observe_request<B>(req: axum::http::Request<B>, next: Next<B>) -> Response`; keep the body above.
+- **Axum 0.7.x–0.8.x:** Use [`axum::extract::Request` and `Next` without a body type parameter](https://docs.rs/axum/0.7.0/axum/middleware/fn.from_fn.html) as shown.
 
 ## Tradeoffs and assumptions
 

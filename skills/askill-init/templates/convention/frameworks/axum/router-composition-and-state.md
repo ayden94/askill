@@ -1,5 +1,11 @@
 # Router composition and state
 
+**Invariant:** Compose routers against one missing-state type and scope the identity guard to routes that require it.
+
+**Compatibility:** Stable state composition in Axum 0.6–0.8; middleware request types change at 0.7, and path registration changes at 0.8. See the [Axum changelog](https://github.com/tokio-rs/axum/blob/axum-v0.8.0/axum/CHANGELOG.md).
+
+**Acceptance check:** The assembled router keeps health public and misses unguarded; only authorized requests can call protected operations, including at parameterized paths.
+
 ## When to read
 
 Read when splitting or nesting routers, introducing application state, or changing which endpoints a middleware layer covers.
@@ -64,6 +70,10 @@ async fn require_actor(mut req: Request, next: Next) -> Response {
 ```
 
 Here `Request` is `axum::extract::Request`, `Next` is `axum::middleware::Next`, and the local `unauthorized_response` supplies the agreed status, body, and any required challenge. `route_layer` only applies to routes already configured. Use `from_fn_with_state` when the middleware itself needs shared state.
+
+- **Axum 0.6.x:** Use `async fn require_actor<B>(mut req: axum::http::Request<B>, next: Next<B>) -> Response`; keep the same guard body. Register dynamic paths as `/widgets/:id` and catchalls as `/assets/*tail`.
+- **Axum 0.7.x:** Use the non-generic middleware signature above. Keep `/widgets/:id` and `/assets/*tail`.
+- **Axum 0.8.x:** Keep the 0.7 middleware signature, but register `/widgets/{id}` and `/assets/{*tail}`. Disabling old-syntax checks does not restore old capture behavior; migrate route strings and test actual extraction.
 
 ## Exceptions and tradeoffs
 

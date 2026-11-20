@@ -1,5 +1,9 @@
 # Separate entry points from resource-free logic
 
+**Invariant:** Import performs no CLI or file work; the code that opens a file closes it even when parsing fails.
+
+**Compatibility:** Version-independent standard-library recipe on Python 3.9+; a framework may own startup instead of `__main__`.
+
 ## When to read
 
 Read when adding an executable module, changing resource acquisition, or moving parsing out of a CLI, scheduled job, or framework callback.

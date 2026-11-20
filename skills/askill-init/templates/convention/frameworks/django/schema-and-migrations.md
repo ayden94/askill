@@ -1,5 +1,9 @@
 # Django schema and migrations
 
+**Invariant:** Fresh and upgraded databases converge on the intended schema without losing valid existing data, and constraints protect invariants from every writer.
+
+**Scope:** Portable migration ordering and historical model use; version-sensitive constructor keywords for database check constraints. Examples target Django ORM and the deployed database engine.
+
 ## Context
 
 Use this for uniqueness, data backfills, and changes to a populated table. Application validation gives friendly feedback; the database must protect rules that apply to imports, admin actions, and concurrent writes.
@@ -38,6 +42,15 @@ class Migration(migrations.Migration):
 ```
 
 The prior migration supplies a nullable column; a later migration can make it required. This update is repeatable and leaves existing non-null statuses alone. It's intentionally irreversible because a previous `NULL` can't be distinguished from an original `"draft"`. One set-based update is simple but can hold locks too long on a large table.
+
+## Version choice: named check constraint
+
+For example, to enforce nonnegative stock, import `CheckConstraint` and `Q` from `django.db.models`. Use the appropriate construction in `Stock.Meta.constraints` (and inspect the generated migration):
+
+- **Django 4.2–5.0:** `CheckConstraint(check=Q(available__gte=0), name="stock_available_nonnegative")`.
+- **Django >=5.1:** `CheckConstraint(condition=Q(available__gte=0), name="stock_available_nonnegative")`. The old keyword was [deprecated in 5.1](https://docs.djangoproject.com/en/5.1/releases/5.1/#miscellaneous) and [removed in 6.0](https://docs.djangoproject.com/en/6.0/releases/6.0/#features-removed-in-6-0). Check historical migration replay as well as current models when upgrading.
+
+On either branch, migrate a database with valid stock, then assert that a direct negative write is rejected and zero is accepted on the actual production engine.
 
 ## Exceptions
 

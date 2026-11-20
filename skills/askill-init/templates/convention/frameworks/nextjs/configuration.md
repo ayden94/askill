@@ -1,10 +1,14 @@
 # Build and runtime configuration
 
+**Invariant:** One build can read server settings from the deployment that runs it, and no secret enters public output or a client bundle.
+
 ## When to read
 
 Read deployment settings, expose a public setting, or promote the same Next.js artifact across environments.
 
-**Assumptions:** The App Router route uses server runtime rendering and a version supporting `connection()` (stable in Next.js 15). The server's fulfillment origin varies by deploy, and its credential must never be sent to clients.
+**Assumptions:** This App Router example runs on a server, not a static export. The server's fulfillment origin varies by deploy, and its credential must never be sent to clients.
+
+Configuration validation and the public projection are portable across Next.js 14.x–16.x; opting into request-time rendering differs. In App Router 14.x, add `export const dynamic = 'force-dynamic'` to the page and omit `await connection()` ([14.x segment configuration](https://nextjs.org/docs/14/app/api-reference/file-conventions/route-segment-config#dynamic)). In 15.x–16.x use [`connection()`](https://nextjs.org/docs/app/api-reference/functions/connection), stable from 15.0.0; if 16.x Cache Components is enabled and the read is under a prerendered shell, put `connection()` and the runtime read in a child under Suspense. In the Pages Router, put the runtime read in [`getServerSideProps`](https://nextjs.org/docs/pages/api-reference/functions/get-server-side-props), not in the page component. Static export cannot satisfy the same-artifact runtime-setting test below.
 
 Classify settings as build-time public, runtime public, or server-only before choosing where to read them. Direct references to `NEXT_PUBLIC_*` in client code are inlined at build time. Read runtime server settings after opting into request-time rendering and validate them at the boundary rather than relying on non-null assertions.
 

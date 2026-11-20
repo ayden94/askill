@@ -1,5 +1,9 @@
 # Django scheduled management commands
 
+**Invariant:** A command run does bounded work, and repeat or overlapping runs cannot overwrite a row that is no longer eligible.
+
+**Scope:** Portable for Django management commands performing conditional database updates; the separate scheduler and database concurrency guarantees are deployment-specific.
+
 **Read when:** Adding a periodic cleanup, repair, or other Django database maintenance job.
 
 ## Decision

@@ -1,5 +1,9 @@
 # Domain invariants and collection ownership
 
+**Invariant:** An aggregate owns its stored and returned snapshots and rejects every construction or transition that would violate its domain rules.
+
+**Compatibility:** Version-sensitive. Java 16+ supports the [record](https://openjdk.org/jeps/395) declarations as shown; on earlier targets use final classes with private final fields, validating constructors and accessors (and value equality if exposed). Below Java 10 [`List.copyOf`/`Set.copyOf`](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/List.html#copyOf(java.util.Collection)), null-check each element while creating a new `ArrayList` or `HashSet`, then wrap that private copy with `Collections.unmodifiableList` or `unmodifiableSet`; don't wrap the caller's input. Also use declared local types below [Java 10 `var`](https://openjdk.org/jeps/286). Below Java 11 [`isBlank`/`strip`](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html#strip()), test `text.codePoints().allMatch(Character::isWhitespace)` on Java 8–10 and strip draft edges with `text.replaceAll("\\A\\p{javaWhitespace}+|\\p{javaWhitespace}+\\z", "")`, not `trim()`, which uses a different character rule. In either version, test source mutation, empty/blank/null labels, Unicode whitespace, and last-seat rejection.
+
 ## When to read
 
 Read when constructing a value from collections or editing a state transition that must preserve business rules. Check how the aggregate is created and reconstructed, including persistence hydration and serialization.

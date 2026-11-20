@@ -1,5 +1,9 @@
 # Put small interfaces at the consumer boundary
 
+**Invariant:** A read-only finder satisfies this consumer without write methods, and failed lookups never expose a partial name.
+
+**Compatibility:** Version-independent interface and context recipe on Go 1.20+.
+
 ## When to read
 
 Read when a service depends on storage or another adapter, when a public constructor becomes hard to use, or when a test double must implement methods the code never calls.

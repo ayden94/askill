@@ -1,5 +1,11 @@
 # Testing Ktor
 
+**Invariant:** The route-contract test runs the production module once and asserts both the wire outcome and committed effects.
+
+**Compatibility:** Ktor test-host migration at 2.0 (new API) and 3.0 (legacy API removed and module auto-loading changed); use the matching `ktor-server-test-host` version. See the [Ktor 3.0 testing migration](https://ktor.io/docs/migrating-3.html#testing).
+
+**Acceptance check:** The mounted production route accepts a well-formed write exactly once and returns the exact malformed-body error without writing.
+
 ## When to read
 
 Read when changing routing, installed plugins, authentication, negotiation, or HTTP failure behavior.
@@ -34,7 +40,11 @@ fun `create widget with valid body writes once`() = testApplication {
 }
 ```
 
-Choose explicit module loading or test configuration that loads the real module; do not accidentally load it twice. Keep fakes scoped to a test and make unexpected effects fail visibly.
+- **Ktor 1.x legacy test host:** Use `withTestApplication({ widgetModule(widgets) })` and `handleRequest(HttpMethod.Post, "/widgets") { addHeader(HttpHeaders.ContentType, "application/json"); setBody(rawJson) }`. Assert `response.status()` and `response.content` as well as the fake's writes. Use that line's compatible server module imports and test artifact.
+- **Ktor 2.x:** Prefer `testApplication` with the HTTP client as shown; the old functions are deprecated. The host can load modules from default config, so set `environment { config = MapApplicationConfig() }` when explicitly injecting `widgetModule(widgets)` and supply needed settings there.
+- **Ktor 3.x:** Use `testApplication` as shown; default config no longer auto-loads the module and `withTestApplication` is removed. Alternatively set `environment { config = ApplicationConfig("application-test.conf") }` to load configured modules; omit the explicit install of the same module.
+
+Keep fakes scoped to a test and make unexpected effects fail visibly.
 
 ## Test the server's error path with raw wire input
 

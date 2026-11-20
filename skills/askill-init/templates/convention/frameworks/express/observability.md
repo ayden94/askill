@@ -1,5 +1,9 @@
 # Request observability
 
+**Invariant:** Each response produces exactly one lifecycle record, and a premature close is never recorded as a completed HTTP status.
+
+The observer is portable across Express 4.x and 5.x on a Node runtime supporting the shown APIs: it relies on Node [`ServerResponse` events](https://nodejs.org/api/http.html#class-httpserverresponse), not Express router internals. Supply `randomUUID` from `node:crypto` and `performance` from `node:perf_hooks` if not already imported.
+
 ## When to read
 
 Add access logging or latency metrics that must distinguish completed responses from transport disconnects.

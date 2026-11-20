@@ -1,5 +1,11 @@
 # Testing Gin
 
+**Invariant:** A route-contract test crosses the production router with realistic wire input and measures effects.
+
+**Compatibility:** Stable Gin 1.x `ServeHTTP` with Go [`httptest`](https://pkg.go.dev/net/http/httptest); `httptest.NewRecorder` does not establish real socket or proxy behavior. `req.WithContext(ctx)` avoids requiring Go 1.23's `httptest.NewRequestWithContext`.
+
+**Acceptance check:** A malformed authenticated request reaches binding, produces the exact public error and performs zero writes; separately confirm cancellation with an entry/release handshake.
+
 ## When to read
 
 Read when changing route registration, middleware, validation, response contracts, or request lifetime behavior.

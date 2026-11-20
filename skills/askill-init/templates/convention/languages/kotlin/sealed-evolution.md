@@ -1,5 +1,9 @@
 # Sealed model evolution
 
+**Invariant:** Known variants get deliberate exhaustive handling, while a well-formed future wire tag uses the supported unknown path.
+
+**Compatibility:** Version-sensitive in the Kotlin language, not the Java sealed-class feature or JVM target. On Kotlin 1.5+ use a [sealed interface](https://kotlinlang.org/docs/whatsnew15.html#sealed-interfaces); on already-supported older compilers with sealed classes, declare `sealed class ReviewStatus` and put every variant inside it with `: ReviewStatus()`. This is a source-level alternative, not a binary-compatible conversion of an existing interface to a class. In either version, verify exhaustiveness when adding a known case and decode a well-formed unknown tag without sending an unsupported subtype to an old client.
+
 ## When to read
 
 Read when adding a sealed variant, exposing one to consumers, or decoding values that can be sent by a newer producer.

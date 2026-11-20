@@ -1,5 +1,9 @@
 # Consume iterables once and keep accumulators call-local
 
+**Invariant:** A one-shot input is consumed once without mutating the caller's seed or sharing state across calls; strict pairing must not silently drop a row.
+
+**Compatibility:** The accumulation recipe is version-independent on Python 3.9+; the strict sequence pairing recipe below splits at Python 3.10.
+
 ## When to read
 
 Read when introducing an iterable parameter, aggregating streamed records, or passing an optional collection of caller-owned state.
@@ -53,15 +57,15 @@ Summarize a generator producing `"a", "b", "a"` with seed `{"a": 4}`, then summa
 
 ## Compatibility: pairing two finite sequences without losing a row
 
-Use this rule only when the contract requires equal lengths. For two ordinary, stable sequences, choose by the minimum supported runtime, not by the developer workstation. The source for the cutoff is [PEP 618](https://peps.python.org/pep-0618/).
+Use this rule only when the contract requires equal lengths. For two ordinary, stable sequences, choose by the minimum supported runtime, not by the developer workstation. `zip(strict=True)` was added in Python 3.10 ([Python 3.10 release notes](https://docs.python.org/3.10/whatsnew/3.10.html#other-language-changes), [PEP 618](https://peps.python.org/pep-0618/)).
 
 ```python
-# Minimum Python >= 3.10
+# Python >= 3.10
 pairs = list(zip(names, values, strict=True))
 ```
 
 ```python
-# Supporting Python 3 versions below 3.10 as well
+# Python 3.9 within this rulebook's support range
 if len(names) != len(values):
     raise ValueError("names and values must have equal lengths")
 pairs = list(zip(names, values))

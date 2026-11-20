@@ -1,5 +1,9 @@
 # Nullability and explicit outcomes
 
+**Invariant:** Convert platform nullability at the boundary, and represent distinguishable lookup outcomes without absorbing unexpected failures.
+
+**Compatibility:** Version-sensitive in the language. [Sealed interfaces](https://kotlinlang.org/docs/whatsnew15.html#sealed-interfaces) became stable in Kotlin 1.5; on Kotlin 1.3–1.4 use `sealed class DocumentLookup` and inherit as `: DocumentLookup()` for all three nested variants. Keep exhaustive `when` expressions on both. The JVM mapping uses the same Java getter and Kotlin [`takeIf`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/take-if.html) (since 1.1); neither the sealed interface nor the mapping requires a newer JDK. Exercise found, missing, denied, and unexpected failure with either outcome type.
+
 ## When to read
 
 Read when mapping unannotated Java APIs, validating a DTO, or choosing whether a store's public return type should be nullable. Start with the actual annotations and transport/storage state diagram.

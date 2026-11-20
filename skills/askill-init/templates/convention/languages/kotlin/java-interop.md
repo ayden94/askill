@@ -1,5 +1,9 @@
 # Java-facing JVM APIs
 
+**Invariant:** A compatible Kotlin/JVM release preserves the exact Java-callable method descriptors and their documented default behavior.
+
+**Compatibility:** Portable in the supported range of Kotlin/JVM. Explicit overloads and delegation need neither a newer JDK API nor a particular JVM bytecode level; [Kotlin default arguments alone](https://kotlinlang.org/docs/java-to-kotlin-interop.html#overloads-generation) do not declare the Java overload. Use the configured target, and test the emitted artifact rather than assuming that a Kotlin source call proves Java linkage.
+
 ## When to read
 
 Read when Kotlin declares a JVM API used by Java source, frameworks, or already-compiled consumers.

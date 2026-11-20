@@ -1,5 +1,11 @@
 # Request correlation
 
+**Invariant:** The edge owns the request ID, and the response, logs and approved downstream hops agree on it.
+
+**Compatibility:** Stable Gin 1.x middleware plus [standard request context propagation](https://pkg.go.dev/net/http#Request.WithContext); logging adapter choice is independent of Gin. The `log/slog` logger shown requires [Go 1.21](https://go.dev/doc/go1.21#slog).
+
+**Acceptance check:** Reuse one caller-supplied ID across two requests; the edge generates distinct IDs that match their response headers and captured logs, including a guard rejection.
+
 ## When to read
 
 Read when joining Gin access events and downstream logs through a request ID.
@@ -29,6 +35,9 @@ func correlate(c *gin.Context) {
 
 router.Use(correlate, gin.Recovery())
 ```
+
+- **Go 1.21 or newer:** Call `logger.InfoContext(ctx, ...)` on a `*slog.Logger` as above.
+- **Go before 1.21, with a compatible Gin pin:** Use the project's existing logger with explicit `request_id` and `status` fields, or `log.Printf("request complete request_id=%s status=%d", id, c.Writer.Status())`; keep the same standard request-context propagation.
 
 ## Tradeoffs and assumptions
 

@@ -1,5 +1,11 @@
 # Responses and async work
 
+**Invariant:** Map each domain result to one response and release short-lived lock guards before unrelated I/O.
+
+**Compatibility:** Stable [`IntoResponse` and handler `Send` requirements](https://docs.rs/axum/0.8.0/axum/handler/index.html) for the ordinary async-function recipe on Axum 0.6–0.8. Lock lifetime is a Rust concurrency concern, not an Axum version difference; Tokio spawning is a separate lifetime decision.
+
+**Acceptance check:** A second request acquires the configuration snapshot while the first awaits its gateway; not-found and unexpected errors preserve exact public responses without leaking diagnostics.
+
 ## When to read
 
 Read when translating application errors, storing shared mutable data, awaiting a dependency, or handing work off from a request handler.

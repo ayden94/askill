@@ -1,5 +1,9 @@
 # Standalone deployment
 
+**Invariant:** The published artifact boots without the source workspace and serves its matching static assets and traced runtime dependencies.
+
+The [standalone output contract](https://nextjs.org/docs/app/api-reference/config/next-config-js/output) below is portable across Next.js 14.x–16.x with either router, for the stated single-package self-hosted Node layout. It is not a static export or an adapter deployment.
+
 ## When to read
 
 Package a self-hosted Next.js build and verify the final artifact can run without the build workspace.
@@ -19,9 +23,11 @@ cd /artifact && npm run start
 
 ## Good
 
-```ts
-// next.config.ts
-export default { output: 'standalone' } satisfies NextConfig;
+```js
+// next.config.mjs (14.x–16.x)
+/** @type {import('next').NextConfig} */
+const config = { output: 'standalone' };
+export default config;
 ```
 
 ```sh

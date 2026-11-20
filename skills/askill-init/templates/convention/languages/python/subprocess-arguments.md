@@ -1,5 +1,9 @@
 # Pass subprocess arguments as arguments, not shell text
 
+**Invariant:** The child receives the label as one argument; nonzero exit and timeout are failures, not output values.
+
+**Compatibility:** Version-independent recipe on Python 3.9+ for direct execution of the Python interpreter; `capture_output` requires Python 3.7+. Do not generalize this to shell scripts or Windows batch launchers.
+
 ## When to read
 
 Read when running an external executable with filenames or other values that may contain spaces or punctuation.

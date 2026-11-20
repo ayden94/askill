@@ -1,5 +1,9 @@
 # Effects and async lifetimes
 
+**Invariant:** Only the active synchronization lifetime may publish results; replacement or unmount makes every earlier completion irrelevant.
+
+The `useEffect` cleanup and relevance flag are portable across React 18.x and 19.x. Effects run only on the client; the extra setup–cleanup cycle in a development root under Strict Mode is a check, not a production scheduling guarantee ([`useEffect`](https://react.dev/reference/react/useEffect), [Strict Mode](https://react.dev/reference/react/StrictMode)).
+
 **Assumptions:** Search is client-only, has no shared query cache, and empty text requires no request. `search` is a stable import that validates the response and accepts an `AbortSignal`. `SearchResults` is remounted for each query via `<SearchResults key={query} query={query} />` so old results aren't shown while the next Effect starts.
 
 Use an Effect for synchronization tied to a committed UI subscription, timer or request. Pair setup with cleanup for replacement and unmount. Include reactive dependencies; hiding dependencies or bypassing development Strict Mode defeats the lifetime check. Start user-triggered writes from their handlers, not from render or a mount Effect.
@@ -43,4 +47,4 @@ Initialize result to pending on mount and render an empty prompt for empty input
 
 1. Make A resolve after B; only B's rows appear. Repeat with a late rejection from A.
 2. Reject the active request and assert a recoverable error; unmount while pending and assert cancellation.
-3. In the app's development Strict Mode configuration, verify setup–cleanup–setup leaves only one active subscription or request generation.
+3. With Strict Mode at the test root in development, verify setup–cleanup–setup leaves only one live request generation. Do not assert an exact transport call count.

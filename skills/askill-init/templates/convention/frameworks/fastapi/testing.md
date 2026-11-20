@@ -1,5 +1,9 @@
 # FastAPI testing
 
+**Invariant:** HTTP tests exercise the ASGI contract with isolated overrides and correct resource lifetime, not a direct endpoint call.
+
+**Scope:** Version-sensitive for the pairing of Starlette's HTTPX-based `TestClient` and HTTPX. Async transport tests still manage app lifespan explicitly.
+
 ## Context
 
 Use this when testing route validation, exception mapping, authentication, overrides, or lifecycle. Direct calls skip ASGI routing, dependency resolution, middleware, validation, and response serialization.
@@ -42,6 +46,13 @@ def test_create_device_string_rate_returns_422_without_insert(
 ```
 
 This assumes strict rate validation and a storage dependency on the route. `monkeypatch` restores previous values; other runners can use `try/finally`. The fake proves the store wasn't called, not transaction rollback.
+
+## Version choice: synchronous TestClient
+
+- **Starlette `>=0.21.0, <0.37.2`:** With the HTTPX-based client, resolve an HTTPX version `<0.28` compatible with the project's other dependency constraints, then use `with TestClient(app)` as above. Otherwise update FastAPI and its permitted Starlette together rather than forcing an unsupported Starlette version.
+- **Starlette `>=0.37.2`:** Use the same `with TestClient(app)` with HTTPX `0.28` when permitted by the resolved dependencies; the removed constructor argument is no longer passed.
+
+[Starlette 0.21.0 switched from Requests to HTTPX](https://www.starlette.dev/release-notes/#0210-september-26-2022), [0.37.2 stopped passing `app=`](https://www.starlette.dev/release-notes/#0372-march-5-2024), and [HTTPX 0.28.0 removed it](https://github.com/encode/httpx/releases/tag/0.28.0). For either supported pairing, the same invalid-rate and lifespan assertions below must pass.
 
 ## Exceptions
 

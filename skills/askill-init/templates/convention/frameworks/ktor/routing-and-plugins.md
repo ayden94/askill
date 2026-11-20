@@ -1,5 +1,11 @@
 # Routing and plugins
 
+**Invariant:** Require a named provider on protected routes and map expected failures without swallowing cancellation.
+
+**Compatibility:** Plugin-dependent across Ktor 2.x and 3.x: install matching [Authentication](https://ktor.io/docs/server-auth.html) and [StatusPages](https://ktor.io/docs/server-status-pages.html) artifacts. The principal type bound changes at Ktor 3.0; resource authorization remains application policy.
+
+**Acceptance check:** Health stays public; anonymous, invalid and forbidden calls cannot mutate; authorized success and domain conflict return their exact documented responses.
+
 ## When to read
 
 Read when wiring modules, adding a protected route, or deciding which layer translates exceptions.
@@ -17,7 +23,10 @@ routing {
 }
 ```
 
-**Right —** use one application assembly for production and tests, and pass the authenticated identity into the protected operation. Here `verify` returns `ActorPrincipal?`, where `ActorPrincipal` implements Ktor's `Principal`.
+**Right —** use one application assembly for production and tests, and pass the authenticated identity into the protected operation. Here `verify` returns `ActorPrincipal?`.
+
+- **Ktor 2.x:** Declare `data class ActorPrincipal(val id: Long) : Principal` using `io.ktor.server.auth.Principal`; the [2.x API](https://api.ktor.io/2.3.x/ktor-server-auth/io.ktor.server.auth/-authentication-context/principal.html) requires the marker.
+- **Ktor 3.x:** Declare `data class ActorPrincipal(val id: Long)`; the [3.0 API](https://api.ktor.io/3.0.x/ktor-server-auth/io.ktor.server.auth/-authentication-context/principal.html) accepts any non-null principal object. Continue retrieving the specific type with `call.principal<ActorPrincipal>()`.
 
 ```kotlin
 install(Authentication) {

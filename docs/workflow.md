@@ -28,6 +28,8 @@ Retries are bounded and preserve issue/worktree identity. Missing inputs, unconf
 
 ## Review evidence
 
+For version-sensitive changes, follow [Using a version-aware rulebook](rulebook-compatibility.md) before picking an example or accepting a review finding.
+
 Every mandatory verdict identifies the reviewer role, lane, issue, `base_sha`, `head_sha`, and accepted contract digest. The three roles are contract, code, and verification. Keep their results separate: `pass`, `block`, or `needs-evidence`. All three must pass at the same binding. No project documentation is required to start; no necessary evidence may be inferred from its absence.
 
 An optional OCR receipt is not an axis verdict. Record `completed`, `skipped-uninstalled`, `skipped-not-authorized`, or `failed` against the same review binding. OCR failure is visible but does not turn a passing set of three required axes into a failed set. Confirmed defects, including findings first surfaced by OCR, still require fix-back and review of the new head.

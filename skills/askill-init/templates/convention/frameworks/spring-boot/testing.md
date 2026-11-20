@@ -1,5 +1,9 @@
 # Spring Boot testing
 
+**Invariant:** The test harness exercises the claimed boundary; a rollback check observes durable state outside the application transaction.
+
+**Scope:** Portable harness choice, version-sensitive slice imports and bean overrides. Examples use Boot 3.5, Spring MVC/JPA and JUnit Jupiter.
+
 ## Context
 
 Use this when choosing a harness for controller contracts, repositories, transactional services, or deployed HTTP behavior. A test should exercise the boundary it claims without adding unrelated application setup.
@@ -46,6 +50,18 @@ class CheckoutRollbackTest {
 ```
 
 The test has no `@Transactional`; configure an isolated database and clean committed fixtures explicitly. Make the fixture exercise a write before failure, and add a companion success case to catch setups where neither call can persist. This harness is slower than a slice but tests the application-managed transaction.
+
+## Version choice: slice wiring
+
+For an MVC slice, annotate the class with `@WebMvcTest(ProfileController.class)`, inject `MockMvc`, and override the `CreateProfiles` collaborator with the field annotation below. Keep the real MVC validators, advice and relevant security filters.
+
+| Boot | Slice imports and collaborator field |
+| --- | --- |
+| `2.7` or `>=3.0, <3.4` | `org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest` / `org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest`; `@MockBean CreateProfiles createProfiles` (`org.springframework.boot.test.mock.mockito.MockBean`). |
+| `>=3.4, <4.0` | Same slice imports; `@MockitoBean CreateProfiles createProfiles` (`org.springframework.test.context.bean.override.mockito.MockitoBean`). |
+| `>=4.0` | `org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest` / `org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest`; the same `@MockitoBean` field and the corresponding `spring-boot-starter-webmvc-test` or `spring-boot-starter-data-jpa-test` dependency for the selected slice. |
+
+[`@MockBean` was deprecated in Boot 3.4](https://docs.spring.io/spring-boot/3.4/api/java/org/springframework/boot/test/mock/mockito/MockBean.html) in favor of the [Spring Framework 6.2 override](https://docs.spring.io/spring-framework/reference/6.2/testing/annotations/integration-spring/annotation-mockitobean.html). Boot 4 [removed Boot's Mockito support and split test modules](https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-4.0-Migration-Guide#upgrading-testing-features). On every branch, send a blank-name request with valid auth and CSRF where required; expect `400` and no calls to the mock, then show valid input reaches it once.
 
 ## Exceptions
 

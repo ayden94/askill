@@ -1,5 +1,9 @@
 # API and binary compatibility
 
+**Invariant:** An upgrade advertised as compatible must still link already-compiled consumers, recompile supported source callers, and preserve their documented behavior.
+
+**Compatibility:** Portable in the supported range. The overload and delegation use ordinary classes and method calls, with no newer JDK API. The version under comparison is the library release; separately check that both artifacts target their promised JDKs.
+
 ## When to read
 
 Read before changing a published Java library signature or distributing a new JAR to separately built callers. Identify which source, binary, and behavioral promises the project makes.

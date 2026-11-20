@@ -1,5 +1,11 @@
 # Service and response boundaries
 
+**Invariant:** Request-required work uses the request lifetime and each outcome writes one public response.
+
+**Compatibility:** Stable Gin 1.x transport pattern; use [Go's incoming request context](https://pkg.go.dev/net/http#Request.Context), not `*gin.Context`, as the cancellation contract. The wrapped-error example needs Go 1.13+ [`errors.Is`](https://go.dev/doc/go1.13#error_wrapping) and a compatible Gin pin.
+
+**Acceptance check:** Cancel after the dependency starts and observe resource release; wrapped not-found and unexpected failures each produce exactly one documented response without internal diagnostics.
+
 ## When to read
 
 Read when adding service calls, deadlines, error mappings, or background work to a Gin endpoint.

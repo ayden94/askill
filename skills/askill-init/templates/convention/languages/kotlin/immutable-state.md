@@ -1,5 +1,9 @@
 # Immutable state snapshots
 
+**Invariant:** Publishing a new state cannot mutate a previously published snapshot or lose an accepted concurrent update.
+
+**Compatibility:** Version-sensitive. The JVM collection wrapper is not the version gate: [`asStateFlow`](https://github.com/Kotlin/kotlinx.coroutines/blob/1.4.0/kotlinx-coroutines-core/common/src/flow/operators/Share.kt) is in `kotlinx-coroutines-core` 1.4.0, and [`update`](https://github.com/Kotlin/kotlinx.coroutines/blob/1.6.4/CHANGES.md#version-151) in 1.5.1. With core 1.4.x–1.5.0 keep `asStateFlow()` and run the same copy-and-publish operation as `synchronized(lock) { mutableState.value = next(mutableState.value, id) }`, where every writer uses the same private `Any()` lock and `next` creates the unmodifiable snapshot. On 1.5.1+ the atomic update shown replaces that lock. With either, retain an old snapshot, attempt mutation from Java, and assert two concurrent adds survive.
+
 ## When to read
 
 Read when exposing state through `StateFlow`, copying nested state, or accepting updates from multiple callbacks.

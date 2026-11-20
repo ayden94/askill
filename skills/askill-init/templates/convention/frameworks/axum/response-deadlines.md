@@ -1,5 +1,11 @@
 # Response deadlines
 
+**Invariant:** A local response deadline becomes the documented HTTP outcome instead of an unhandled service error.
+
+**Compatibility:** Stable error-mapping policy on Axum 0.6–0.8; the API choice is [Tower `timeout`](https://docs.rs/tower/0.5.2/tower/timeout/struct.TimeoutLayer.html) versus a response-producing middleware, not a framework version split. Axum requires [fallible middleware errors to become responses](https://docs.rs/axum/0.8.0/axum/error_handling/index.html).
+
+**Acceptance check:** An indefinitely pending handler yields the configured 503 and body and drops its future; a prompt handler is unaffected.
+
 ## When to read
 
 Read when adding a Tower deadline to the time an ordinary route takes to produce its response.

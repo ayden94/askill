@@ -1,5 +1,9 @@
 # Route and browser testing
 
+**Invariant:** Verification reaches the real Next.js server and shows the same persisted result on client navigation and on a cold request.
+
+The production HTTP/browser split is portable across Next.js 14.x–16.x and both routers; the mounted URL and fixtures must use their actual router and rendering mode. The async Server Component limitation mentioned here applies to App Router, and a browser freshness test does not establish cache behavior for another deployment adapter or configuration.
+
 **Assumptions:** The repository already uses Playwright and can run against a production build of its App Router app. The test fixtures provision an isolated record and authenticated context; navigation uses real links.
 
 Test the smallest layer that can fail: unit-test a parser, request-test the real endpoint for HTTP behavior, and browser-test rendering, hydration and navigation. An async Server Component called as a function does not run the Next.js router or test framework rendering. Verify cold entry as well as client transitions, which can reuse different state.

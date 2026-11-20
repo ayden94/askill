@@ -1,5 +1,9 @@
 # Keep type-only imports out of the runtime graph
 
+**Invariant:** A module used only for types does not appear in emitted imports and cannot run startup code through that dependency.
+
+**Compatibility — portable spelling across the TypeScript 5.0 emit boundary:** In TypeScript 3.8–4.9 and TypeScript 5.0+ use a whole-statement [`import type`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html#type-only-imports-and-export) for a type-only edge; it is erased in both ranges. Inline `type` specifiers need [4.5+](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-5.html#type-modifiers-on-import-names), and with [`verbatimModuleSyntax` in 5.0+](https://www.typescriptlang.org/tsconfig/verbatimModuleSyntax.html) an inline-only import becomes `import {} from ...`, not zero imports.
+
 ## When to read
 
 Read when a TypeScript module uses a contract from another module but not its values, particularly when the provider has startup side effects.
@@ -34,4 +38,4 @@ This example is a Node ESM TypeScript project that emits `.js`. The companion mo
 
 ## Verification
 
-In a scratch build with `verbatimModuleSyntax`, have the companion module throw on evaluation and import just `label` from the emitted module. **Pass:** the good output contains no `reports.js` import, and calling `label({ title: "Draft" })` returns `"Draft"` without evaluating the companion.
+In scratch Node ESM builds with and without `verbatimModuleSyntax` (omit the option before 5.0), have the companion module throw on evaluation and import just `label` from the emitted module. **Pass:** in either build the good output contains no `reports.js` import and `label({ title: "Draft" })` returns `"Draft"`. In a 5.0+ build with the option enabled, the bad example retains the empty import and triggers the throw.

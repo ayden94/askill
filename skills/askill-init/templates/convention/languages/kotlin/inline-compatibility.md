@@ -1,5 +1,9 @@
 # Public inline compatibility
 
+**Invariant:** Separately built clients keep linking, and library-controlled policy lives outside consumer-inlined code.
+
+**Compatibility:** Portable in the supported range of Kotlin/JVM with [`@PublishedApi`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-published-api/) (since Kotlin 1.1); the JVM class token is not a newer JDK feature. The same wrapper and helper apply across that range, but changing the compiler or JVM target does not waive the old-binary linkage check.
+
 ## When to read
 
 Read when publishing or changing a public inline/reified API used by modules that may not rebuild with the library.

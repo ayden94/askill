@@ -1,5 +1,9 @@
 # Boundary values and coercion
 
+**Invariant:** Only an absent limit defaults; an explicit limit is either a valid number or a validation failure.
+
+**Compatibility — portable within ES2015+ hosts with [URLSearchParams](https://url.spec.whatwg.org/#interface-urlsearchparams):** The parser uses `getAll` to retain duplicates and `Number.isSafeInteger` for the numeric guard. In Node the URL adapter is [global from Node 10](https://nodejs.org/api/url.html#class-urlsearchparams), or available from `url` in Node 6.13–6.x and Node 7.5–9.x. The parser itself needs no change. For the separate typed-options default, [`??` is ES2020](https://tc39.es/ecma262/2020/#sec-binary-logical-operators-runtime-semantics-evaluation); on ES2015–ES2019 use `value === null || value === undefined ? fallback : value` with the value evaluated once. Both must retain `0`, `false`, and `""` and default only nullish inputs.
+
 ## When to read
 
 Read when accepting query or environment strings, applying defaults, or turning data from an adapter into domain values. The input contract decides what missing, blank, repeated, and out-of-range values mean.

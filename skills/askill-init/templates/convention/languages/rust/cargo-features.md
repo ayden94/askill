@@ -1,5 +1,9 @@
 # Additive Cargo features
 
+**Invariant:** Adding an optional capability never removes or changes the behavior of a capability promised in every supported build.
+
+**Compatibility:** Version-sensitive in Cargo manifest syntax. With [Cargo 1.60+](https://blog.rust-lang.org/2022/04/07/Rust-1.60.0/#new-syntax-for-cargo-features), declare `compression = ["dep:codec"]` under `[features]` and mark `codec` optional; this suppresses the implicit public `codec` feature. On older supported Cargo, use `compression = ["codec"]` with the same optional dependency and account for the implicit `codec` feature in the public contract. Keep the same Rust `cfg(feature = "compression")` and never gate `raw`. Check the [feature resolver](https://doc.rust-lang.org/cargo/reference/resolver.html#feature-resolver-version-2) separately from `rust-version` and edition; resolved features may be unified, so do not make shared capabilities subtractive. Run the same default, minimal, compression, and combined-consumer checks.
+
 ## When to read
 
 Read when adding a feature, changing defaults, or gating a public API or optional dependency.

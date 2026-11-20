@@ -1,5 +1,9 @@
 # Extension dispatch
 
+**Invariant:** If a contract depends on the runtime subtype, dispatch through that subtype's member rather than an extension selected by its static type.
+
+**Compatibility:** Portable in the supported range. Static extension selection and virtual member dispatch are [language rules](https://kotlinlang.org/docs/extensions.html); the ordinary interface, data class, and list mapping require no newer API or specific JVM target.
+
 ## When to read
 
 Read when adding an extension, overloading one for subtypes, or migrating behavior from an extension to a member.

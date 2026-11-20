@@ -1,5 +1,9 @@
 # Coroutine ownership and cancellation
 
+**Invariant:** Required child work completes or is cancelled with its caller; cancellation never produces a successful fallback.
+
+**Compatibility:** Version-sensitive in `kotlinx-coroutines-core`, not the JVM target. [`currentCoroutineContext`](https://github.com/Kotlin/kotlinx.coroutines/blob/1.6.4/CHANGES.md#version-137) arrived in 1.3.7; the sample uses core 1.3.8+ for the [`ensureActive` empty-context fix](https://github.com/Kotlin/kotlinx.coroutines/blob/1.6.4/CHANGES.md#version-138). On core 1.3.0–1.3.7 use `kotlin.coroutines.coroutineContext[Job]?.ensureActive()` (import `Job` and `ensureActive` from `kotlinx.coroutines`). Both check the suspending caller's job, not an enclosing scope. The error-prone [`runCatching`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/run-catching.html) is a separate Kotlin stdlib 1.3 API, not a coroutine cancellation construct. In both variants, cancel the caller, join child cleanup, and verify the fallback was not invoked.
+
 ## When to read
 
 Read when launching sibling operations, moving work off a UI thread, implementing a fallback, or changing the owner of background work. Check which job should cancel the work: a request, UI lifecycle, or application-owned worker.

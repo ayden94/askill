@@ -1,5 +1,9 @@
 # Server and client boundaries
 
+**Invariant:** Privileged reads stay in the server graph, and only an explicitly projected browser-safe value crosses into the interactive editor.
+
+The [Server/Client Component boundary](https://nextjs.org/docs/app/getting-started/server-and-client-components) and `server-only` recipe are portable across App Router 14.x–16.x. Pages Router rendering is not the same module boundary: read server data in `getServerSideProps` for a private request-time page and project its returned props rather than treating pages as Server Components.
+
 **Assumptions:** This App Router page renders authenticated preferences. `readOwnPreferences` gets the session server-side, limits the lookup to its owner, and can return fields that must not cross into browser-visible data.
 
 Use a Server Component for the lookup and keep the smallest interactive subtree under `'use client'`. A client entry's imports are part of the client module graph; marking a server model as a TypeScript type does not redact object properties. Pass a minimal, serializable view model. Put `import 'server-only'` in server data modules as a build-time guard against client imports, not as a substitute for projection or authorization.
@@ -7,8 +11,10 @@ Use a Server Component for the lookup and keep the smallest interactive subtree 
 ## Bad
 
 ```tsx
-const prefs = await readOwnPreferences();
-return <PreferencesEditor initial={prefs} />;
+export default async function PreferencesPage() {
+  const prefs = await readOwnPreferences();
+  return <PreferencesEditor initial={prefs} />;
+}
 ```
 
 ## Good
@@ -19,7 +25,9 @@ export default async function PreferencesPage() {
   const prefs = await readOwnPreferences();
   return <PreferencesEditor initial={{ theme: prefs.theme, locale: prefs.locale }} />;
 }
+```
 
+```tsx
 // app/preferences/preferences-editor.tsx (separate file)
 'use client';
 export function PreferencesEditor({ initial }: { initial: PreferencesView }) {

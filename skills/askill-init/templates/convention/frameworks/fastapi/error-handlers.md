@@ -1,5 +1,9 @@
 # FastAPI error handlers and diagnostic ownership
 
+**Invariant:** Deliberate HTTP failures preserve their status and protocol headers; unexpected failures expose no implementation detail and reach the diagnostic boundary.
+
+**Scope:** Portable for Starlette-backed HTTP exception dispatch; WebSocket errors, request validation, and post-response failures are separate boundaries.
+
 **Read when:** Introducing a shared error envelope or customizing the treatment of authentication, retry, and internal failures.
 
 ## Decision

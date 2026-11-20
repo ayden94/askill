@@ -1,5 +1,9 @@
 # Django transactions and queries
 
+**Invariant:** Competing writers preserve the stored invariant, rolled-back work emits no commit callback, and related reads stay within a bounded query budget.
+
+**Scope:** Portable transaction and query patterns on Django 4.2 and newer. Verify locks on the deployed database; the example uses the default alias and does not opt into robust callback handling.
+
 ## Context
 
 Use this when a use case mutates several rows, coordinates competing writers, or renders a list with related data. QuerySets are lazy: building a queryset doesn't execute it, even inside a transaction.

@@ -1,5 +1,11 @@
 # Server shutdown
 
+**Invariant:** Stop accepting work, drain accepted requests, then close dependencies they still use.
+
+**Compatibility:** Stable Gin 1.x [`http.Handler` integration](https://pkg.go.dev/github.com/gin-gonic/gin@v1.11.0#Engine.ServeHTTP); shutdown is Go's [`http.Server.Shutdown`](https://pkg.go.dev/net/http#Server.Shutdown), available since Go 1.8. The example's multi-error helper is independently gated by [Go 1.20](https://go.dev/doc/go1.20#errors).
+
+**Acceptance check:** A held request finishes before normal dependency cleanup; after expiry, the forced-close path reports the deadline and closes the connection.
+
 ## When to read
 
 Read when adding the process entry point or changing what a deploy does to active requests.
@@ -35,6 +41,9 @@ case <-stop.Done():
     return nil
 }
 ```
+
+- **Go 1.20 or newer:** Use `errors.Join` as shown to preserve both the drain and forced-close errors.
+- **Go 1.13–1.19, with a compatible Gin pin:** Replace the join with `if closeErr := srv.Close(); closeErr != nil { log.Printf("forced close: %v", closeErr) }; return err`. Preserve the drain failure as the returned error; log the independent close failure. Go 1.13 is the floor of this branch because it retains `errors.Is` elsewhere.
 
 ## Tradeoffs and assumptions
 

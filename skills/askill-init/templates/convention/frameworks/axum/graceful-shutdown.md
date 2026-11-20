@@ -1,5 +1,11 @@
 # Graceful shutdown
 
+**Invariant:** Resolve the stop signal into a drain, await the serving future, then stop workers that in-flight requests still depend on.
+
+**Compatibility:** Serving API gate at Axum 0.7 due to the Hyper 1.0 migration; see the [Axum 0.7 release](https://tokio.rs/blog/2023-11-27-announcing-axum-0-7-0). Tokio provides the signal/runtime, not the server's drain semantics.
+
+**Acceptance check:** Initiate shutdown with a request held open; admission stops and the accepted response completes before worker cleanup.
+
 ## When to read
 
 Read when adding the server entry point or coordinating rolling deploys and dependency teardown.
@@ -25,6 +31,9 @@ let result = axum::serve(listener, app)
 workers.stop().await?;
 result?;
 ```
+
+- **Axum 0.6.x:** For a bound nonblocking `std::net::TcpListener`, use `let result = axum::Server::from_tcp(listener)?.serve(app.into_make_service()).with_graceful_shutdown(shutdown_signal()).await;` and the same post-drain worker cleanup.
+- **Axum 0.7.x–0.8.x:** Bind a `tokio::net::TcpListener` and use `axum::serve` as above. Axum 0.8 broadens listener support, but the TCP recipe is unchanged.
 
 ## Tradeoffs and assumptions
 

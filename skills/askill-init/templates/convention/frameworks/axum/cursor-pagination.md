@@ -1,5 +1,11 @@
 # Cursor pagination
 
+**Invariant:** Resume after the last returned key, not the lookahead row, and bind the cursor to the original query scope.
+
+**Compatibility:** Stable application/store policy in Axum 0.6–0.8. [`Query<T>`](https://docs.rs/axum/0.8.0/axum/extract/struct.Query.html) decodes a DTO; `after: Option<String>` is a field of the DTO, not an optional Axum extractor. Keep `Query<ListParams>` required even when the token is absent.
+
+**Acceptance check:** With tied keys, each lookahead row starts the next page and the terminal page has no token; changed-scope tokens fail before any list call.
+
 ## When to read
 
 Read when a list needs reproducible continuation across requests rather than numbered pages.

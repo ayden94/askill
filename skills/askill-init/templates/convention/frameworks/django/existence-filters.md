@@ -1,5 +1,9 @@
 # Django existence filters and pagination
 
+**Invariant:** Each authorized matching parent occupies one slot in a deterministic page regardless of how many children match.
+
+**Scope:** Portable for Django 4.2 and newer with the ORM and a backend supporting the query; direct `filter(Exists(...))` predates that range ([introduced in Django 3.0](https://docs.djangoproject.com/en/3.0/releases/3.0/#models)).
+
 **Read when:** A paginated parent list gains a filter on a reverse relation, or parents start repeating across pages.
 
 ## Decision

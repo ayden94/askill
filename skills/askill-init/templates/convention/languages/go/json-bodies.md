@@ -1,5 +1,9 @@
 # Decode exactly one bounded JSON request value
 
+**Invariant:** A successful decode consumed one non-null note within the byte cap; unknown fields, trailing values, and oversized bodies fail without returning a partial note.
+
+**Compatibility:** Version-independent `encoding/json` v1 recipe on Go 1.20+; `http.MaxBytesError`, used at the handler boundary, is available from [Go 1.19](https://go.dev/doc/go1.19#nethttppkgnethttp).
+
 ## When to read
 
 Read when an HTTP endpoint accepts one JSON object and intends to reject unknown keys and trailing data.

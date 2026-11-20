@@ -1,5 +1,11 @@
 # Middleware and routing
 
+**Invariant:** Only authenticated requests enter protected handlers; outer instrumentation observes the completed chain.
+
+**Compatibility:** Stable Gin 1.x routing and control flow as shown in the pinned [route registration](https://github.com/gin-gonic/gin/blob/v1.11.0/routergroup.go) and [`Context.Next`/`Abort`](https://github.com/gin-gonic/gin/blob/v1.11.0/context.go). This is neither a Go language version split nor a resource-authorization mechanism.
+
+**Acceptance check:** The mounted router keeps health public, blocks unauthorized effects, and records one final status for each success, denial, miss, and recoverable pre-commit panic.
+
 ## When to read
 
 Read when mounting route groups, introducing authentication, or recording the status and latency of a request.

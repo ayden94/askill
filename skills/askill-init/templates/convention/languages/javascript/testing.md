@@ -1,8 +1,12 @@
 # Testing asynchronous contracts
 
+**Invariant:** The test owns every async assertion and observes the latest publish and original rejection independently of elapsed time.
+
+**Compatibility — portable within Node 20+ ESM and its stable [`node:test` runner](https://nodejs.org/api/test.html):** The examples use ordinary async tests and [`assert.rejects`](https://nodejs.org/api/assert.html#assertrejectsasyncfn-error-message), not runner mock or timer APIs. Node made the runner stable in 20; if the project already uses a different runner (including a browser runner), register the same test bodies with it, use its timeout configuration, and join its rejection assertion. No runner change is needed to control completion order.
+
 ## When to read
 
-Read when a test involves promises, overlap, retries, injected I/O, or fake time. Use the project's runner and CI command. The examples use `node:test` and `node:assert/strict` in an ES module on Node.js 22+.
+Read when a test involves promises, overlap, retries, injected I/O, or fake time. Use the project's runner and CI command.
 
 ## Rules
 

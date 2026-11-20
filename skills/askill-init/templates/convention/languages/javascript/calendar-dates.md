@@ -1,5 +1,9 @@
 # Keep calendar dates separate from instants
 
+**Invariant:** Advancing a validated date-only string yields the same Gregorian day in every host time zone.
+
+**Compatibility — portable within ES2015+ hosts implementing the [ECMAScript date-time string format](https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-date-time-string-format):** The explicit `Z`, UTC setters, and ISO formatting provide the needed semantics without an Intl API, Temporal, or a local time-zone calculation. Do not substitute locale-dependent parsing on older hosts.
+
 ## When to read
 
 Read when advancing a date-only field such as a booking day or an invoice due date.

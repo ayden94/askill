@@ -1,5 +1,9 @@
 # Resolve resources relative to their owner
 
+**Invariant:** A package module reads its own shipped file regardless of the caller's working directory.
+
+**Compatibility — portable within filesystem-backed Node ESM on Node 16+:** [Node's `import.meta.url`](https://nodejs.org/api/esm.html#importmetaurl) and [`readFile` accepting a file URL](https://nodejs.org/api/fs.html#fspromisesreadfilepath-options) suffice throughout this scope; `import.meta.dirname` (Node 20.11/21.2+) buys nothing here. For a Node CommonJS build, use `readFile(join(__dirname, "banner.txt"), "utf8")` with `node:fs/promises` and `node:path`, resolving against the [CommonJS module's directory](https://nodejs.org/api/modules.html#__dirname). The switch is module format, not compiler age; run the same check on every emitted entry.
+
 ## When to read
 
 Read when a Node ES module loads a resource distributed in the same package, or when a CLI stops working outside the package directory.

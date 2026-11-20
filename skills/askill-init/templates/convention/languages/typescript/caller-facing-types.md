@@ -1,5 +1,9 @@
 # Use caller-facing types that preserve useful relationships
 
+**Invariant:** Each valid key determines its return type, and a returned snapshot cannot mutate the source.
+
+**Compatibility — portable within TypeScript 4.9+ with `strict` and ES2015+ runtimes:** [`keyof` and indexed access](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-1.html#keyof-and-lookup-types) date to TS 2.1; no newer inference helper is needed. Compile the object spread for the selected runtime target. `Readonly` is erased; the copy and `Object.freeze` enforce this primitive-only snapshot at runtime.
+
 ## When to read
 
 Read when exporting a new signature, replacing an assertion with a generic, or deciding whether to share data with a caller.

@@ -1,5 +1,9 @@
 # Accessibility and focus
 
+**Invariant:** Removing the focused control leaves keyboard focus on a deliberate, still-mounted target; an unrelated update must not move focus.
+
+The button event, committed-DOM `useLayoutEffect`, and native focus behavior in this recipe are portable across React DOM 18.x and 19.x. The focus move itself runs only in the browser.
+
 ## When to read
 
 Change a React interaction that removes the focused control or replaces a screen region after a user action.

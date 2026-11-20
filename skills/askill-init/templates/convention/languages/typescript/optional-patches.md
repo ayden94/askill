@@ -1,5 +1,9 @@
 # Give omission and clearing different patch semantics
 
+**Invariant:** Leave, clear, and assign (including `""`) are distinct operations; explicit `undefined` is not a valid command.
+
+**Compatibility — compiler version/option boundary:** TypeScript 4.4+ with `strictNullChecks` and [`exactOptionalPropertyTypes`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-4.html#exact-optional-property-types---exactoptionalpropertytypes) enabled separately from `strict` can use the optional-key shape. For TypeScript 4.0–4.3, or 4.4+ with `strictNullChecks` but without that option, use the tagged operation below if you control the API shape. JavaScript execution does not enforce the compiler option.
+
 ## When to read
 
 Read when a typed patch API must distinguish leaving a value alone, clearing it, and assigning a new value.
@@ -31,8 +35,26 @@ function applyPatch(profile: Profile, patch: ProfilePatch): Profile {
 
 ## Assumptions and trade-offs
 
-This is a typed call with plain data, an ES2022 target, and `exactOptionalPropertyTypes` enabled separately from `strict`. A wire adapter still has to validate untyped input. When that flag is not enabled, the implementation treats explicit `undefined` as omission; use a tagged operation if the API must distinguish the two without the flag. `""` is a valid assignment here.
+Without the flag an optional property accepts explicit `undefined`; an `undefined` check alone can't enforce the input distinction. Instead, use required fields on distinct variants:
+
+```ts
+type Profile = { nickname: string | null };
+type NicknamePatch =
+  | { kind: "leave" }
+  | { kind: "clear" }
+  | { kind: "assign"; nickname: string };
+
+function applyPatch(profile: Profile, patch: NicknamePatch): Profile {
+  switch (patch.kind) {
+    case "leave": return { nickname: profile.nickname };
+    case "clear": return { nickname: null };
+    case "assign": return { nickname: patch.nickname };
+  }
+}
+```
+
+If the wire shape must remain stable, validate its own property presence and value before translating to the operation. A wire adapter must validate untyped input with either design.
 
 ## Verification
 
-Starting with `"old"`, apply `{}`, `{ nickname: null }`, and `{ nickname: "" }`. Typecheck a separate call with `{ nickname: undefined }` under the stated flags. **Pass:** the results are `"old"`, `null`, and `""`; the explicit `undefined` call is rejected by the compiler.
+Starting with `"old"`, apply `{}`, `{ nickname: null }`, and `{ nickname: "" }` or the corresponding `leave`, `clear`, and `assign` operations. Also typecheck an explicit `undefined` in the nickname value slot in each API. **Pass:** results are `"old"`, `null`, and `""`, and explicit `undefined` fails typechecking.

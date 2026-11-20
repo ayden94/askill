@@ -1,5 +1,11 @@
 # Resource visibility
 
+**Invariant:** Apply visibility in the same operation as the mutation, and give missing and hidden rows the same public result.
+
+**Compatibility:** Stable application/store policy across Ktor 2.x and 3.x. The [Authentication plugin](https://ktor.io/docs/server-auth.html) provides trusted caller identity; it does not implement tenant scoping or atomic deletion.
+
+**Acceptance check:** Only an owned ID is deleted; foreign and absent IDs yield identical 404 representations and leave storage unchanged.
+
 ## When to read
 
 Read when a protected mutation must not disclose whether an out-of-scope resource exists.

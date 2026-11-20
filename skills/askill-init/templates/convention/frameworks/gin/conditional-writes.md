@@ -1,5 +1,11 @@
 # Conditional writes
 
+**Invariant:** A stale precondition cannot commit a write; the comparison and update share one storage operation.
+
+**Compatibility:** Stable application/store policy across Gin 1.x; the transport uses [standard Go HTTP headers](https://pkg.go.dev/net/http#Header) and the semantics are defined by [HTTP `If-Match`](https://www.rfc-editor.org/rfc/rfc9110.html#name-if-match), not Gin.
+
+**Acceptance check:** Two concurrent writes using the same valid tag yield exactly one 204 and one 412; the stored row and new tag belong to the winner.
+
 ## When to read
 
 Read when editors can overwrite each other's changes to a versioned resource.

@@ -1,5 +1,9 @@
 # Preserve public call shapes when adding an option
 
+**Invariant:** Old consumer calls still typecheck and behave as before; the new option changes only calls that opt into it.
+
+**Compatibility — portable within TypeScript 4.9+ with `strict`:** The optional trailing parameter works without new overload, resolution, or emit behavior. The implementation below deliberately uses an ordinary guard, so its emitted behavior doesn't need native optional chaining (ES2020) or any new built-in. Check the oldest compiler and runtime the package actually supports against the published entry.
+
 ## When to read
 
 Read before changing the declaration of a published function when existing consumers import it without coordinated upgrades.
@@ -23,7 +27,7 @@ export function formatLabel(options: { label: string; uppercase?: boolean }): st
 export type LabelOptions = { uppercase?: boolean };
 
 export function formatLabel(label: string, options?: LabelOptions): string {
-  return options?.uppercase ? label.toUpperCase() : label;
+  return options && options.uppercase ? label.toUpperCase() : label;
 }
 ```
 

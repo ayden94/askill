@@ -1,6 +1,10 @@
 # Request and mutation boundaries
 
-**Assumptions:** The App Router handler below targets Next.js 15+ with awaited route params (older App Router versions used synchronous params). The session uses a bearer credential in this example, and `renameProject` checks ownership and returns `missing` for inaccessible projects by contract.
+**Invariant:** Every invocation validates input and checks access to the URL's target before it writes, regardless of how the invocation was reached.
+
+Validation and authorization are portable across Next.js 14.x–16.x; this is an App Router Route Handler, not a Pages Router `pages/api` route. In 14.x use `ctx: { params: { id: string } }` and `ctx.params.id`. In 15.x–16.x use the promised type and `await` below; 15.x temporarily supported synchronous access, which 16.x removed ([15 upgrade](https://nextjs.org/docs/app/guides/upgrading/version-15#route-handlers), [16 upgrade](https://nextjs.org/docs/app/guides/upgrading/version-16#async-request-apis-breaking-change)). A PATCH to a valid route with a conflicting body ID must never change a different record on either branch.
+
+**Assumptions:** The session uses a bearer credential in this example, and `renameProject` checks ownership and returns `missing` for inaccessible projects by contract. `NextResponse.json` from `next/server` works without relying on the installed TypeScript version's static `Response.json` typings ([14.x Route Handler reference](https://nextjs.org/docs/14/app/building-your-application/routing/route-handlers)).
 
 Treat each Route Handler and Server Action as a callable entry point. Validate route params, body, search params or `FormData` with the configured parser; check identity and resource authorization independently of UI visibility. Map expected outcomes explicitly. Let unexpected failures surface through configured server reporting and a safe error response, not raw messages.
 
@@ -16,24 +20,26 @@ export async function PATCH(request: Request) {
 ## Good
 
 ```ts
+import { NextResponse } from 'next/server';
+
 export async function PATCH(request: Request, ctx: { params: Promise<{ id: string }> }) {
   const actor = await authenticateBearer(request);
-  if (!actor) return Response.json({ code: 'UNAUTHENTICATED' }, { status: 401 });
+  if (!actor) return NextResponse.json({ code: 'UNAUTHENTICATED' }, { status: 401 });
 
   const id = parseProjectId((await ctx.params).id);
   let input: unknown;
   try {
     input = await request.json();
   } catch {
-    return Response.json({ code: 'INVALID_JSON' }, { status: 400 });
+    return NextResponse.json({ code: 'INVALID_JSON' }, { status: 400 });
   }
   const command = parseRename(input); // null unless valid; allow only `name`
-  if (!id || !command) return Response.json({ code: 'INVALID_INPUT' }, { status: 400 });
+  if (!id || !command) return NextResponse.json({ code: 'INVALID_INPUT' }, { status: 400 });
   const result = await renameProject(actor, id, command);
   if (result.kind === 'missing') {
-    return Response.json({ code: 'NOT_FOUND' }, { status: 404 });
+    return NextResponse.json({ code: 'NOT_FOUND' }, { status: 404 });
   }
-  return Response.json({ id: result.project.id, name: result.project.name });
+  return NextResponse.json({ id: result.project.id, name: result.project.name });
 }
 ```
 

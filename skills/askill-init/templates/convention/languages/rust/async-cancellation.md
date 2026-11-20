@@ -1,5 +1,9 @@
 # Async cancellation and partial progress
 
+**Invariant:** A timeout must not lose track of any bytes already read if the same connection will be reused.
+
+**Compatibility:** Version-sensitive in the Tokio dependency, separately from edition and compiler. On Tokio 1.x use the [`read`/`read_exact` cancellation contracts](https://docs.rs/tokio/1.48.0/tokio/io/trait.AsyncReadExt.html), with `io-util` and `time` enabled and a running timer driver. On an existing Tokio 0.2.25 runtime, use its [`AsyncReadExt::read`](https://docs.rs/tokio/0.2.25/tokio/io/trait.AsyncReadExt.html#method.read) with [`timeout_at`](https://docs.rs/tokio/0.2.25/tokio/time/fn.timeout_at.html) and the same caller-owned cursor: the [old `read` future forwards one poll](https://github.com/tokio-rs/tokio/blob/tokio-0.2.25/tokio/src/io/util/read.rs) and has no hidden offset to discard on cancellation. Keep dependencies and I/O adapters on the same Tokio major: [Tokio 1.x changed `poll_read` to `ReadBuf`](https://tokio.rs/blog/2020-12-tokio-1-0). Use the dependency release's actual MSRV in addition to the crate's edition floor. In both branches verify a partial read, timeout, resume, and an untouched following frame.
+
 ## When to read
 
 Read when a timeout or `select!` can drop active I/O, especially when the same connection will be reused.

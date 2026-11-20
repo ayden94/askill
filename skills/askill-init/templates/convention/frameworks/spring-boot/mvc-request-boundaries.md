@@ -1,5 +1,9 @@
 # Spring Boot MVC request boundaries
 
+**Invariant:** Invalid or unauthorized requests cannot invoke the mutation, stored ownership comes from authentication, and success exposes only the public DTO.
+
+**Scope:** Portable Servlet MVC boundary; Bean Validation imports are version-sensitive. The example assumes Boot 3.5 and MVC/Jackson, not WebFlux.
+
 ## Context
 
 Use this for servlet controllers, JSON request/response changes, or failures exposed to clients. MVC/Jackson binding, Bean Validation, Spring Security, and domain rules protect different parts of the request.
@@ -54,6 +58,13 @@ class ProfileController {
 ```
 
 The security chain must require an authenticated caller at this route. The DTO projection costs a little mapping code but stops persistence details from silently changing the API. Choose and test whether Jackson rejects or ignores unknown keys; either way they must not change stored ownership.
+
+## Version choice: validation imports
+
+- **Boot 2.7 (if maintained):** On Java 17, keep the DTOs and handler and replace the validation imports with `javax.validation.Valid`, `javax.validation.constraints.NotBlank`, and `javax.validation.constraints.Size`. Use the matching Boot-managed validation provider.
+- **Boot >=3.0:** Use the `jakarta.validation` imports above with its matching provider. This is the [Boot 3.0 Jakarta migration](https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.0-Migration-Guide#jakarta-ee), not a change introduced by Boot 3.5.
+
+Run the same invalid-body, authorization, and public-DTO checks on either branch.
 
 ## Exceptions
 

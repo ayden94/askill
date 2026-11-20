@@ -1,5 +1,9 @@
 # Image delivery
 
+**Invariant:** An image reserves its layout slot, advertises a matching responsive size, and is optimized only from the intended source policy.
+
+`Image` sizing and reserved geometry are portable across App and Pages Routers in Next.js 14.x–16.x. Strict query-free remote optimization below uses `remotePatterns.search`, which requires 14.2.14–14.x, 15.x, or 16.x. On 14.0.0–14.2.13 use a controlled local path such as `/catalog/widget.jpg` as `src` and omit the remote pattern rather than silently permitting query variants. In either version, the intended asset loads with reserved geometry and query-bearing URLs on the CDN are not admitted by the optimizer. See the [image API version history](https://nextjs.org/docs/app/api-reference/components/image#version-history).
+
 ## When to read
 
 Add a responsive image whose transferred size, visual stability, or origin policy matters.
@@ -17,7 +21,8 @@ Use intrinsic dimensions or a reserved aspect-ratio container. Set `sizes` to th
 ## Good
 
 ```tsx
-// next.config.ts (merge with the existing config)
+// next.config.mjs (merge with the existing config)
+/** @type {import('next').NextConfig} */
 export default {
   images: {
     remotePatterns: [{
@@ -25,7 +30,7 @@ export default {
       pathname: '/catalog/**', search: '',
     }],
   },
-} satisfies NextConfig;
+};
 
 // Product media component; class matches the slot in sizes.
 <Image src={product.photoUrl} alt={product.photoAlt}
@@ -33,7 +38,7 @@ export default {
   sizes="(max-width: 700px) 100vw, 50vw" />
 ```
 
-Use meaningful alt text or `alt=""` for decoration. Start with default loading; only prioritize a measured critical image using the installed version's API. The built-in optimizer does not forward authorization headers: choose a supported loader or unoptimized delivery if the image access contract requires a different authenticated path.
+Use meaningful alt text or `alt=""` for decoration. Start with default loading. If measurement warrants head preloading for one known LCP image, use `priority` on 14.x–15.x or `preload` on 16.x (`priority` deprecated); verify the critical image starts early and secondary images remain lazy in either branch ([image API](https://nextjs.org/docs/app/api-reference/components/image#preload)). The default optimizer does not forward authorization headers: choose a supported loader or unoptimized delivery if the image access contract requires a different authenticated path.
 
 ## Verification
 

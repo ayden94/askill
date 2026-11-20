@@ -1,5 +1,9 @@
 # Reuse the HTTP client and own each response body
 
+**Invariant:** A fetch returns only a complete, bounded successful response and closes every response body it owns, including on failure.
+
+**Compatibility:** Version-independent recipe on Go 1.20+; `http.NewRequestWithContext` (Go 1.13) and `io.ReadAll` (Go 1.16) are both available at that floor.
+
 ## When to read
 
 Read when adding an outbound HTTP lookup or diagnosing connections held by an upstream response.

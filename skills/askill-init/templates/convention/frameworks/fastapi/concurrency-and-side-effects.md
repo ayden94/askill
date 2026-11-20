@@ -1,5 +1,9 @@
 # FastAPI concurrency and side effects
 
+**Invariant:** Blocking work does not stall independent requests, and a durable acceptance response is sent only after persisting one replay-safe job.
+
+**Scope:** Portable for FastAPI's sync/async route dispatch and application-owned job storage. Use the project's supported parameter declaration syntax.
+
 ## Context
 
 Use this for blocking SDKs, outbound I/O, retries, and tasks that run beyond the response. `async def` is not an offload instruction: synchronous helpers called inside it still run on the event-loop thread.

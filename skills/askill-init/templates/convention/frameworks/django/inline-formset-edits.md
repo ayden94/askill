@@ -1,5 +1,9 @@
 # Django inline formset edits
 
+**Invariant:** A bounded, fully validated group of edits applies atomically to one authorized parent, or changes nothing.
+
+**Scope:** Portable on Django 4.2 and newer for ordinary Django form posts; the configurable `absolute_max` and invalid-management-form behavior already arrived in [Django 3.2](https://docs.djangoproject.com/en/3.2/releases/3.2/#forms).
+
 **Read when:** Editing a parent and its related rows together, or adding a rule across editable rows.
 
 ## Decision

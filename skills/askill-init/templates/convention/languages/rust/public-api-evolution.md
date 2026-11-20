@@ -1,5 +1,9 @@
 # Evolving public data types
 
+**Invariant:** An API expected to gain cases must leave downstream code a documented fallback without breaking supported external callers.
+
+**Compatibility:** Version-sensitive in compiler MSRV. From [Rust 1.40](https://blog.rust-lang.org/2019/12/19/Rust-1.40.0/), use `#[non_exhaustive]` on a new extensible public enum; the example's [`matches!`](https://doc.rust-lang.org/std/macro.matches.html) separately requires 1.42. On 1.40–1.41 write `match result { ScanResult::Findings { count } => *count > 0, _ => false }`. A new API targeting Rust 1.39 or older can instead expose `pub struct ScanResult(PrivateResult);` with public construction methods and stable queries such as `has_findings`, keeping the enum and all matching internal. For either public shape, introduce an internal/new case and rebuild the same downstream fixture; it must take its documented fallback without exposing a false success. The opaque type is not a compatible retrofit of a public enum.
+
 ## When to read
 
 Read when publishing a data type or adding enum variants or fields used by downstream crates.

@@ -1,5 +1,9 @@
 # Streaming boundaries
 
+**Invariant:** A slow region cannot delay a useful shell, and any status that must be sent to the client is decided before the response starts streaming.
+
+Suspense placement and [`loading.tsx`](https://nextjs.org/docs/app/api-reference/file-conventions/loading) are portable across App Router 14.x–16.x. Their fallback is not a guarantee of streamed bytes: the read in this example must run at request time, not be fully satisfied during prerendering, and the deployed transport must not buffer it. With Cache Components enabled in 16.x, keep the uncached runtime read in the suspended child, not the shell. `loading.tsx` is not a Pages Router file convention.
+
 ## When to read
 
 Release an App Router shell while an independent slow section loads, without concealing the status contract of the page.

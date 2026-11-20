@@ -1,5 +1,9 @@
 # Narrow untrusted values at runtime boundaries
 
+**Invariant:** Only a fresh projection of validated own fields crosses into the typed application.
+
+**Compatibility — independent compiler and runtime boundaries:** TypeScript 4.9+ can use [unlisted-property narrowing with `in`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html#unlisted-property-narrowing-with-the-in-operator); TypeScript 3.0–4.8 (which has [`unknown`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-0.html#new-unknown-top-type)) needs an explicit type predicate. Separately, the `Object.hasOwn` variant needs an ES2022 object library declaration and a runtime implementing [`Object.hasOwn`](https://tc39.es/ecma262/2022/multipage/fundamental-objects.html#sec-object.hasown); for an ES2015–ES2021 runtime without it, use `Object.prototype.hasOwnProperty.call`. Lowering `target` does not supply the method.
+
 ## When to read
 
 Read when turning data from JSON, storage, or an untyped SDK into a value that typed application code will trust.
@@ -49,7 +53,19 @@ function decodeOrder(body: string): Order {
 
 ## Why and trade-offs
 
-`in` supplies the TypeScript 4.9+ narrowing, while `Object.hasOwn` enforces own fields instead of accepting inherited values. Explicit projection discards extra fields. Unlike an assertion, validation pays a runtime cost but prevents invalid external data from reaching code that assumes the invariant.
+`in` supplies narrowing, while the own-property check rejects inherited values. For the older compiler or runtime use this predicate, and replace each pair of presence checks with `!hasOwnId(input)` or `!hasOwnQuantity(input)` respectively:
+
+```ts
+function hasOwnId(value: object): value is { id: unknown } {
+  return Object.prototype.hasOwnProperty.call(value, "id");
+}
+
+function hasOwnQuantity(value: object): value is { quantity: unknown } {
+  return Object.prototype.hasOwnProperty.call(value, "quantity");
+}
+```
+
+The predicate narrows only the presence of one own key; the value checks remain unchanged. The ES2015 `Number.isSafeInteger` API is required independently. Explicit projection discards extra fields.
 
 ## Edge cases and exceptions
 
@@ -57,4 +73,4 @@ The decoding path starts from inert JSON data; this is not a way to safely inspe
 
 ## Verification
 
-Decode a valid order with an extra key, then malformed JSON, `null`, a missing ID, a whitespace-only ID, string quantity, fractional quantity, and zero. Call `parseOrder` with an inherited ID as well. **Pass:** the valid value contains only `id` and `quantity`; all invalid inputs fail in the expected decoding or validation stage before any persistence call.
+Run the same checks for both paths. Decode `{"id":"O-1","quantity":2,"extra":true}`, then malformed JSON, `null`, a missing ID, a whitespace-only ID, string quantity, fractional quantity, and zero. Call `parseOrder` with an inherited ID as well. **Pass:** the valid value is exactly `{ id: "O-1", quantity: 2 }`; malformed JSON fails decoding, and every other invalid input fails validation before persistence.

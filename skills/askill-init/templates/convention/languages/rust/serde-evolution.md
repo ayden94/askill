@@ -1,5 +1,9 @@
 # Serde schema evolution
 
+**Invariant:** A schema rename keeps the promised write spelling and accepts supported old and new read spellings without treating absent, invalid, and duplicate fields alike.
+
+**Compatibility:** Version-sensitive in `serde_derive`, not the Rust edition. The field alias arrived in [Serde 1.0.85](https://github.com/serde-rs/serde/compare/v1.0.84...v1.0.85) and is [read-only](https://serde.rs/field-attrs.html#alias). On an older supported Serde 1.0 release retain `Serialize` with `rename = "name"` and implement `Deserialize` with a `MapAccess` visitor: route `"name"` and `"display_name"` to one `Option<String>` slot and reject its second occurrence; read `"tags"` as `Vec<String>` (not `Option<Vec<_>>`), default it only if unseen, and handle unrecognized keys under the same schema policy. Require the name slot to be set. With 1.0.85+ derive both as shown. Check resolved Serde/derive versions, the `derive` feature or a direct derive dependency, and the selected format separately. Both branches must pass the same duplicate, null, omitted-field, and old-reader checks.
+
 ## When to read
 
 Read when changing serialized fields, renaming external keys, or reading payloads or records across application versions. The examples assume an existing Serde derive dependency and a named-field format such as JSON.

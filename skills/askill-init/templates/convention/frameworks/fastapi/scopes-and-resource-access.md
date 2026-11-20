@@ -1,5 +1,9 @@
 # FastAPI scopes and resource access
 
+**Invariant:** Access requires both a verified capability and authorization for the specific resource; neither substitutes for the other.
+
+**Scope:** Portable for the `OAuth2PasswordBearer` and `SecurityScopes` wiring shown. This OAuth2 helper already used `401` for missing credentials [before 0.122.0](https://github.com/fastapi/fastapi/blob/0.121.0/fastapi/security/oauth2.py); don't assume that status for every security helper on older versions.
+
 **Read when:** Adding capability-specific OAuth2 access or allowing a caller to act on only some tenant resources.
 
 ## Decision

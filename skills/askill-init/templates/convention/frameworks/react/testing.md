@@ -1,5 +1,9 @@
 # Interaction testing
 
+**Invariant:** The test proves the user-visible transition from a real submit through pending to recoverable failure without inspecting component internals.
+
+The example imports `act` from a version of `@testing-library/react` compatible with the installed React DOM 18.x or 19.x; [Testing Library's wrapper](https://testing-library.com/docs/react-testing-library/api/#act) keeps the example portable. For direct imports in a low-level DOM test, use `react-dom/test-utils` in 18.0.0–18.3.0, and `react` in 18.3.1–18.x or 19.x ([18.3.1 export](https://github.com/facebook/react/releases/tag/v18.3.1), [19 upgrade guide](https://react.dev/blog/2024/04/25/react-19-upgrade-guide#removed-react-dom-test-utils)). With either import, settle the same controlled rejection inside awaited `act` and assert enabled submit plus a retained draft and visible error.
+
 **Assumptions:** The repo already uses Testing Library, its matching DOM assertions, and `user-event` with `setup()`. `RenameForm` disables Save while the provided `save` promise is pending and keeps the draft when it fails.
 
 Exercise visible controls with their accessible names and await both the interaction and async UI transitions. Stub the boundary (a controlled network response or passed-in operation), not React state or Effects. Avoid sleeps and whole-tree snapshots as assertions of behavior.

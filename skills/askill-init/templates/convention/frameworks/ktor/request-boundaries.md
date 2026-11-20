@@ -1,5 +1,11 @@
 # Request boundaries
 
+**Invariant:** Media type, conversion and domain validation are distinct gates, and malformed scalar values never trigger defaults.
+
+**Compatibility:** Stable Ktor 2.x/3.x receive and parameter policy, with a plugin-dependent JSON recipe: align the [server ContentNegotiation plugin and JSON converter](https://ktor.io/docs/server-serialization.html) with the pinned Ktor release. `@Serializable` requires the Kotlin serialization compiler plugin; conversion exceptions also depend on the installed converter.
+
+**Acceptance check:** Only valid JSON writes; unsupported media, malformed JSON and invalid fields produce their documented responses. For scalars, only omission defaults.
+
 ## When to read
 
 Read when binding path/query parameters or request bodies, or changing the status for media type, conversion, or field errors.

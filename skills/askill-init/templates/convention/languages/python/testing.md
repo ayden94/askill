@@ -1,5 +1,9 @@
 # Test side effects at an isolated boundary
 
+**Invariant:** The test detects a malformed second row and proves that no parsed prefix replaced the pre-existing destination.
+
+**Compatibility:** Version-independent `unittest` recipe on Python 3.9+; keep the project runner and do not reinterpret this as a guarantee of atomic writes.
+
 ## When to read
 
 Read when adding filesystem or configuration tests, reproducing failures after partial processing, or patching I/O. Keep the installed runner; this example can run under `unittest` without dependencies.

@@ -1,5 +1,9 @@
 # Django app startup and system checks
 
+**Invariant:** Registry initialization succeeds without application tables or remote services; explicit checks flag invalid configuration before rollout.
+
+**Scope:** Portable for an active `AppConfig` using Django's system check registry; not deployment provisioning or an instance readiness probe.
+
 **Read when:** Adding an app-wide configuration check, signal registration, or initialization hook.
 
 ## Decision

@@ -1,10 +1,14 @@
 # Context and provider scope
 
+**Invariant:** Each consumer reads or updates its nearest feature provider, and independent provider instances do not share feature state.
+
 ## When to read
 
 Expose one feature instance's state or behavior to distant descendants without coupling separate feature instances.
 
-**Assumptions:** Two inbox widgets can coexist, each with an independent unread count. Most toolbar actions only write the count; a badge reads it. The code uses React 18-compatible provider syntax.
+**Assumptions:** Two inbox widgets can coexist, each with an independent unread count. Most toolbar actions only write the count; a badge reads it.
+
+`createContext`, `useContext`, and the explicit `.Provider` recipe are portable across React 18.x and 19.x. In 18.x use `<Unread.Provider value={unread}>…</Unread.Provider>`; in 19.x either keep that form or use `<Unread value={unread}>…</Unread>`, and likewise for the dispatch context. The [React 19 release notes](https://react.dev/blog/2024/12/05/react-19#context-as-a-provider) document the shorthand. Both forms must pass the same two-inbox isolation test below.
 
 Place the provider at the smallest shared boundary. Use a missing-provider sentinel when a default would hide wiring mistakes. Split frequently changing data from stable commands if they have different consumers; the split only avoids updates due to the changed context, not all renders from parents or props.
 

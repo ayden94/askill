@@ -1,5 +1,9 @@
 # Test Go contracts with table subtests and explicit synchronization
 
+**Invariant:** Each test row exercises its own case and proves that its worker reports the expected cancellation outcome before the deadline.
+
+**Compatibility:** The synchronous test works on Go 1.20+. Parallel closures need different capture recipes under pre-1.22 versus 1.22+ Go language semantics ([Go 1.22 release notes](https://go.dev/doc/go1.22#language), [loop-variable migration guide](https://go.dev/blog/loopvar-preview)).
+
 ## When to read
 
 Read when building a test table, exercising errors or filesystem effects, or verifying that a worker exits. This example is a `worker_test.go` file using Go's standard testing runner.
@@ -102,7 +106,38 @@ The signal establishes startup before cancellation and the buffered one-shot res
 
 ## Edge cases and exceptions
 
-These subtests run synchronously. If adding `t.Parallel` on modules with pre-Go-1.22 loop semantics, explicitly capture the row before the closure and check that fixtures are independent. Treat `-race` as a dynamic check for executed code, not proof that no concurrent path can race. Keep timeouts consistent with the project's CI so loaded machines don't pass or fail based on expected scheduler speed.
+These subtests run synchronously. Treat `-race` as a dynamic check for executed code, not proof that no concurrent path can race. Keep timeouts consistent with the project's CI so loaded machines don't pass or fail based on expected scheduler speed.
+
+## Compatibility: capture rows for parallel subtests
+
+In an ordinary module file without a per-file language override, use the module's `go` directive to choose the semantics, not the installed compiler version or the `toolchain` directive. For example, Go 1.22 compiling a package in a module declaring `go 1.21` still uses the old loop semantics. Version build constraints can affect individual files. The new rule applies to variables declared by the loop (`:=`), not to assignments into predeclared variables (`=`). Since [Go 1.21](https://go.dev/doc/go1.21#tools), the module's `go` directive is also a required minimum toolchain version; `toolchain` can suggest a newer toolchain without opting the module into newer language semantics.
+
+For module language versions **Go 1.20–1.21**, shadow the range variable in the loop body:
+
+```go
+// go.mod: go 1.20 or go 1.21 (ordinary module file)
+for _, tc := range cases {
+	tc := tc
+	t.Run(tc.name, func(t *testing.T) {
+		t.Parallel()
+		check(t, tc)
+	})
+}
+```
+
+For module language versions **Go 1.22+**, declare the variable in the range clause so each iteration gets its own binding:
+
+```go
+// go.mod: go 1.22 or later, with a toolchain that supports it
+for _, tc := range cases {
+	t.Run(tc.name, func(t *testing.T) {
+		t.Parallel()
+		check(t, tc)
+	})
+}
+```
+
+With either loop, use two distinctly named rows with different data and have `check` assert that the subtest name's final component matches `tc.name` and that the result matches that row's expected value. **Pass:** both subtests exercise their own row, even though the closures continue after the parent loop. A row copy does not make referenced fixtures independent.
 
 ## Verification
 

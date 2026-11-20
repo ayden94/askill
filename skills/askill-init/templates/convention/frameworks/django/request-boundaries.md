@@ -1,5 +1,9 @@
 # Django request boundaries
 
+**Invariant:** Only an authorized, CSRF-valid write using cleaned fields can change the permitted row; safe methods never mutate it.
+
+**Scope:** Portable for synchronous Django core form views with session cookies and CSRF middleware. Token-only and async adapters have separate wiring.
+
 ## Context
 
 Use this when a Django view accepts input, reads a tenant-owned object, or changes state. URL converters validate path syntax, not permission; session login identifies the caller, not which rows they own.

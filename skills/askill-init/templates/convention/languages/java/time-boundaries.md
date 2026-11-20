@@ -1,5 +1,9 @@
 # Time and zone boundaries
 
+**Invariant:** Resolve local times using the named zone and an explicit gap/overlap policy; compare stored instants at the agreed precision.
+
+**Compatibility:** Version-sensitive in the sample's syntax, not the time API. On Java 8–9, declare `java.util.List<java.time.ZoneOffset> offsets`; Java 10+ can use [`var`](https://openjdk.org/jeps/286) for the same [Java 8 `ZoneRules.getValidOffsets`](https://docs.oracle.com/javase/8/docs/api/java/time/zone/ZoneRules.html#getValidOffsets-java.time.LocalDateTime-) call. Both variants reject a gap and overlap and round-trip using the same storage precision. Zone rule data can change independently of the source level.
+
 ## When to read
 
 Read when a local schedule becomes an instant, an interval is measured, or timestamps cross a wire or database boundary.

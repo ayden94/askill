@@ -1,5 +1,9 @@
 # Treat dynamic lookup keys as data
 
+**Invariant:** Any string key starts absent, and occurrences are counted without consulting an object prototype.
+
+**Compatibility — portable within ES2015+ engines:** Use the same [ES2015 `Map`](https://262.ecma-international.org/6.0/#sec-map-objects) and test its insertion-ordered entries. The string-to-count contract never stores `undefined`, so an equality check is enough and avoids ES2020 `??`, which appears only in the anti-example.
+
 ## When to read
 
 Read when building a counter or registry keyed by externally selected strings, including names that overlap with object properties.
@@ -26,7 +30,8 @@ function countLabels(labels) {
 function countLabels(labels) {
   const counts = new Map();
   for (const label of labels) {
-    counts.set(label, (counts.get(label) ?? 0) + 1);
+    const count = counts.get(label);
+    counts.set(label, (count === undefined ? 0 : count) + 1);
   }
   return counts;
 }

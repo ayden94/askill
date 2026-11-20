@@ -1,5 +1,9 @@
 # Make an empty collection's zero value safe to use
 
+**Invariant:** The uninitialized set reads as empty, accepts its first write, and does not change another independently declared set.
+
+**Compatibility:** Version-independent nil-map recipe on Go 1.20+; this does not promise safe nil receivers, shared-map mutation, or concurrent access.
+
 ## When to read
 
 Read when a struct's only required initialization is a map and callers naturally declare it as a variable or a field.

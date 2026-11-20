@@ -1,5 +1,9 @@
 # Readable transformations and explicit effects
 
+**Invariant:** Reject duplicates according to the declared normalization, and execute batch writes once and only after preparation succeeds.
+
+**Compatibility:** Version-sensitive in the Kotlin stdlib: on JVM, use [`uppercase(Locale.ROOT)`](https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.text/uppercase.html) with Kotlin 1.5+ and `toUpperCase(Locale.ROOT)` on earlier supported stdlibs. This is not a JVM bytecode change; neither variant should use the host's default locale. Run the duplicate and ordering fixtures under a locale with different casing (e.g. Turkish) and check that preparation failure still produces zero writes.
+
 ## When to read
 
 Read when changing collection projections, using several scope functions in one expression, or combining a transformation with storage, logging, or delivery. Check duplicate and ordering rules before choosing a collection operator.

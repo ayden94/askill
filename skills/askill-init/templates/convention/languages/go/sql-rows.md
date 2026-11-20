@@ -1,5 +1,9 @@
 # Check row iteration before publishing a SQL result
 
+**Invariant:** A result is published only after successful scans and clean exhaustion; an early or late failure releases the rows and exposes no partial slice.
+
+**Compatibility:** Version-independent `database/sql` recipe on Go 1.20+; query cancellation also depends on the actual driver supporting the supplied context.
+
 ## When to read
 
 Read when adding a multi-row query whose caller expects a complete result or an error.

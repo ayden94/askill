@@ -1,5 +1,9 @@
 # Resource ownership and exception translation
 
+**Invariant:** The resource owner closes exactly once after consumption, and exception translation preserves the primary and suppressed failures.
+
+**Compatibility:** Version-sensitive. Java 11+ runs the snippets as shown using [`String.isBlank`](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html#isBlank()); Java 8–10 can keep the same [`Files.lines`](https://docs.oracle.com/javase/8/docs/api/java/nio/file/Files.html#lines-java.nio.file.Path-) and try-with-resources scope, declare `java.util.stream.Stream<String> lines` explicitly (local [`var`](https://openjdk.org/jeps/286) needs Java 10), and filter with `!line.codePoints().allMatch(Character::isWhitespace)`. In both variants check Unicode blank lines, exactly-once close, and the translated read failure with its suppressed close error.
+
 ## When to read
 
 Read when a method opens a stream, result set, connection, or similar resource, or when an adapter converts an I/O failure to a service failure. Check who acquires, consumes, and closes the resource, and which resources the framework owns.

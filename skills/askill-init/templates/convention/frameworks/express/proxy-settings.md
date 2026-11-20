@@ -1,5 +1,9 @@
 # Reverse proxy settings
 
+**Invariant:** Derive client address and protocol only from the direct connection and forwarding metadata controlled by trusted hops.
+
+CIDR-based `trust proxy`, `req.ip`, and `req.secure` in this recipe are portable across Express 4.x and 5.x; the CIDRs and header policy are deployment-specific ([Express behind proxies](https://expressjs.com/en/guide/behind-proxies.html)).
+
 ## When to read
 
 Deploy Express behind an ingress or change behavior based on `req.ip`, `req.protocol`, or `req.secure`.

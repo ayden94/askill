@@ -1,5 +1,9 @@
 # List identity across persistence
 
+**Invariant:** A create acknowledgement, retry, or refetch never replaces the mounted editor merely because a server ID arrived.
+
+Sibling key and state identity in this recipe are portable across React 18.x and 19.x. A stable key preserves component identity, not a browser guarantee of focus or selection when a focused DOM node is physically moved.
+
 ## When to read
 
 Add an optimistic list row that an acknowledgement, refresh, or retry will reconcile with a saved record.
@@ -45,5 +49,5 @@ Here retry serializes attempts and uses the original create payload; editor edit
 
 ## Verification
 
-1. Type into the optimistic editor, put its caret mid-word, and resolve the create. Assert draft, focus and caret survive even if the acknowledgement changes sort order.
+1. Type into the optimistic editor, put its caret mid-word, and resolve the create without a reorder. Assert draft, focus and caret survive. Also reorder on acknowledgement and assert the draft follows its editor; if focus and selection must survive a DOM move, verify that separately in a real browser and restore them after commit if needed.
 2. Simulate a committed create with a lost response, retry, and refresh the list before and after acknowledgement. Assert one persisted row and one editor with its draft intact.

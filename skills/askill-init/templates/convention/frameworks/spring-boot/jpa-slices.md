@@ -1,5 +1,9 @@
 # Spring Boot JPA slices and projections
 
+**Invariant:** A window returns only authorized public columns, with deterministic order and a next-window flag without a total-count query.
+
+**Scope:** Portable for Spring Data JPA's `Slice` and explicit JPQL constructor projection across the Boot trains; the example uses Java 17 record DTOs and a production-engine query check.
+
 **Read when:** Adding a JPA “load more” endpoint that needs a next-page indication but not a total count.
 
 ## Decision

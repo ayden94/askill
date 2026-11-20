@@ -1,5 +1,11 @@
 # Upload byte budgets
 
+**Invariant:** Only a complete upload within the actual byte limit may become visible.
+
+**Compatibility:** Go standard-library version gate, not a Gin 1.x routing change: [`http.MaxBytesError`](https://go.dev/doc/go1.19#nethttppkgnethttp) starts at Go 1.19. Respect the selected Gin release's separate toolchain floor.
+
+**Acceptance check:** Exactly the cap publishes once; cap plus one at unknown length returns 413 and interrupted or oversized uploads never publish.
+
 ## When to read
 
 Read when accepting a raw upload whose actual byte count must be bounded, independently of JSON binding.
@@ -37,6 +43,9 @@ default:
     c.Status(http.StatusCreated)
 }
 ```
+
+- **Go 1.19 or newer:** Copy through `http.MaxBytesReader` as above, recognizing `*http.MaxBytesError`.
+- **Go before 1.19, with a compatible Gin pin:** `n, err := io.Copy(stage, io.LimitReader(c.Request.Body, maxUpload+1))` for a finite cap below `math.MaxInt64`. If `n > maxUpload`, return 413 and discard the private stage; otherwise reject any `err` and commit only on successful EOF. The overflow probe can write one excess byte to private staging, never to the public object.
 
 ## Tradeoffs and assumptions
 

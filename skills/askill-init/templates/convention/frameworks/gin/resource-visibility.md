@@ -1,5 +1,11 @@
 # Resource visibility
 
+**Invariant:** No visible match has one public outcome regardless of whether a hidden row exists.
+
+**Compatibility:** Stable application authorization/store policy; Gin 1.x [`Context.JSON`](https://pkg.go.dev/github.com/gin-gonic/gin@v1.11.0#Context.JSON) only renders the chosen outcome. The rule does not depend on Gin middleware versions or the storage driver.
+
+**Acceptance check:** Owned returns 200; foreign and absent produce the same status and body; a backend failure remains distinguishable from not-found.
+
 ## When to read
 
 Read when defining whether callers may learn that a widget belongs to another tenant.

@@ -1,5 +1,9 @@
 # Testing crate contracts
 
+**Invariant:** Public regressions and runnable documentation examples demonstrate the observable contract under every advertised feature configuration.
+
+**Compatibility:** Version-sensitive in compiler MSRV, independently of Cargo's resolved features. On Rust 1.57+ the array assertion can use [`payload.as_slice()`](https://doc.rust-lang.org/std/primitive.array.html#method.as_slice); on Rust 1.56 (the first [Rust 2021 compiler](https://blog.rust-lang.org/2021/10/21/Rust-1.56.0/)) use `&payload[..]` for the same byte slice. The first test's [`matches!`](https://doc.rust-lang.org/std/macro.matches.html) requires Rust 1.42, below the Rust 2021 floor. Use the same public regression, byte-for-byte check, and feature/doctest matrix on both toolchains if both are supported.
+
 ## When to read
 
 Read when adding a regression, changing a public crate interface, documenting an API, or editing `#[cfg(feature = ...)]` code. Use the repository's package names, supported feature combinations, targets, and minimum compiler. Name tests with unit, scenario, and expected behavior; separate Arrange, Act, and Assert with blank lines.

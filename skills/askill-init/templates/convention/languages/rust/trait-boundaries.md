@@ -1,5 +1,9 @@
 # Trait boundaries
 
+**Invariant:** A trait promised for runtime dispatch stays dyn-compatible; generic conveniences must not force concrete type information into that boundary.
+
+**Compatibility:** Portable in the supported range of Rust 2018 and later editions. `dyn Trait`, a free generic helper, and an optional `where Self: Sized` bound are available at those edition floors. This example needs neither a newer trait feature nor a Cargo feature flag.
+
 ## When to read
 
 Read when adding a public trait method, changing generic bounds, or supporting a collection of implementations selected at runtime.
