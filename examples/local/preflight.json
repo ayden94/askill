@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "lane_id": "save-retry",
+  "issue": "LOCAL-1",
+  "base_sha": "1111111111111111111111111111111111111111",
+  "issue_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+  "goal": "Submit one save request while an existing save is pending",
+  "scope": ["Save form pending-state behavior and its regression checks"],
+  "unchanged": ["A failed save can be retried"],
+  "non_goals": ["Changing request payloads or retrying automatically"],
+  "predicted_files": ["src/save-form/", "test/save-form.test.mjs"],
+  "criteria": [
+    {
+      "id": "one-pending-request",
+      "method": "Delay the save response, then click Save twice",
+      "expected": "Exactly one request is observed before the response"
+    },
+    {
+      "id": "retry-after-failure",
+      "method": "Make the first save fail, then click Save again",
+      "expected": "One new request is observed after the failure"
+    }
+  ],
+  "required_review_axes": ["contract", "code", "verification"]
+}

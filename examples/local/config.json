@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "base_branch": "main",
+  "destinations": {
+    "issues": { "provider": "local" },
+    "pull_requests": null,
+    "tickets": null
+  }
+}

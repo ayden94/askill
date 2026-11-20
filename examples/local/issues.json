@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "artifact_id": "save-retry",
+  "issues": [
+    {
+      "id": "LOCAL-1",
+      "title": "Prevent duplicate requests while saving",
+      "url": null
+    }
+  ]
+}

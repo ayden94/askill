@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "lane_id": "save-retry",
+  "base_branch": "main",
+  "source": { "artifact_id": "save-retry" },
+  "confirmed_issues": ["LOCAL-1"],
+  "dependency_graph": { "LOCAL-1": [] },
+  "dependency_reasons": [],
+  "retry_policy": { "attempt_ceiling": 3 },
+  "authority_scope": {
+    "local_commit": true,
+    "push": false,
+    "pr_create": false,
+    "pr_merge": false,
+    "cleanup_command_worktrees": false
+  }
+}
