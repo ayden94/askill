@@ -7,7 +7,7 @@ Do this read-only investigation on first setup, before invoking the JSON CLI. On
 
 | Ecosystem | Evidence to inspect |
 | --- | --- |
-| JavaScript / TypeScript | Read `package.json` for `next`, `react`, or `express`, then inspect app scripts, routes, components, and server entry points. Use `tsconfig.json` and authored `.ts`/`.tsx` files for TypeScript; do not select JavaScript solely because a TS app has a JS config file. |
+| JavaScript / TypeScript | Check direct dependencies such as `next`, `react`, `express`, and `@nestjs/core`. For NestJS, corroborate with `NestFactory.create(...)`, a root module, or controllers in authored application code. Do not infer an Express application just because Nest uses the Express adapter. Check `tsconfig.json` and authored `.ts`/`.tsx` files for TypeScript; a JS config file alone does not select JavaScript. |
 | Python | Read `pyproject.toml` or the project's requirements files for `fastapi` or `django`; check application imports, Django settings, or the ASGI entry point. |
 | Java / Kotlin | Read Maven `pom.xml` or Gradle build files for Spring Boot or Ktor plugins and dependencies. Distinguish Java and Kotlin using authored source roots; a Kotlin Gradle build script does not make a Java service Kotlin. |
 | Go / Rust | Check `go.mod` and Go imports for Gin, or `Cargo.toml` and Rust entry points for Axum. Include standard-library-only modules without inventing a framework. |

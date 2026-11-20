@@ -43,7 +43,7 @@ The installed init skill [infers the profile from the repository](stack-discover
 |---|---|
 | `project_types` (optional; existing profiles remain valid) | `frontend`, `backend`, `cli`, `library`, `mobile`, `devops` |
 | `languages` | `javascript`, `typescript`, `python`, `go`, `java`, `kotlin`, `rust` (each includes a matching testing guide) |
-| `frameworks` | `react`, `nextjs`, `express`, `django`, `fastapi`, `gin`, `spring-boot`, `ktor`, `axum` |
+| `frameworks` | `react`, `nextjs`, `nestjs`, `express`, `django`, `fastapi`, `gin`, `spring-boot`, `ktor`, `axum` |
 
 Issue creation on a remote provider requires both `approval_scope.issue_create: true` on the agreed intake and `authority.issue_create: true` on the `issues` command. Confirm the resolved remote project before granting that permission. If a remote creation response is ambiguous, observe the tracker and link the actual issue instead of repeating the write blindly.
 
