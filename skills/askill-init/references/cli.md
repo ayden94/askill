@@ -19,6 +19,8 @@ Run `init` once for each project. Start subsequent lanes with `scope` or with ex
 
 Local-only config example (replace `main` if the target uses a different base branch):
 
+On first setup, choose exactly one ticket system independently of the issue tracker and PR/MR destination. Set `destinations.tickets` to `{"provider":"jira"}`, `{"provider":"linear"}`, `{"provider":"notion"}`, or `null` for none. This records the choice only; it does not configure MCP, store credentials, or authorize ticket writes.
+
 ```json
 {
   "version": 1,

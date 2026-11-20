@@ -24,6 +24,28 @@ const scopeArgs = {
   drafts: [{ title: 'Prevent duplicate saves' }, { title: 'Document the save behavior' }],
 };
 
+test('init: saves each ticket choice independently and reuses it on resume', async (t) => {
+  for (const tickets of [null, ...['jira', 'linear', 'notion'].map((provider) => ({ provider }))]) {
+    const { call, store } = harness(t);
+    const config = localConfig();
+    config.destinations.tickets = tickets;
+    await call('init', config);
+    assert.deepEqual(store.read('config.json').destinations.tickets, tickets);
+    assert.deepEqual((await call('init', {})).destinations.tickets, tickets);
+    await call('scope', scopeArgs);
+  }
+});
+
+test('init: rejects unknown ticket providers and credential fields before saving', async (t) => {
+  const { call, store } = harness(t);
+  for (const tickets of [{ provider: 'other' }, { provider: 'jira', token: 'example' }]) {
+    const config = localConfig();
+    config.destinations.tickets = tickets;
+    await assert.rejects(call('init', config), /tickets/);
+    assert.equal(store.read('config.json'), null);
+  }
+});
+
 test('init: incompatible replacement and nonboolean OCR opt-in -> original configuration remains untouched', async (t) => {
   const { call, store } = harness(t);
   const config = localConfig();

@@ -38,8 +38,13 @@ function option(input, key, fallback) {
   return Object.hasOwn(input, key) ? input[key] : fallback;
 }
 
-function destination(input, name) {
+function destination(input, name, existingConfig) {
   if (input === null && name !== 'issues') {
+    return;
+  }
+  if (name === 'tickets' && (['jira', 'linear', 'notion'].includes(input?.provider) || !existingConfig)) {
+    record(input, ['provider'], 'destinations.tickets');
+    requireThat(['jira', 'linear', 'notion'].includes(input.provider), 'choose Jira, Linear, Notion, or null for tickets');
     return;
   }
   const includesRemote = name === 'pull_requests';
@@ -59,7 +64,7 @@ function destination(input, name) {
   }
 }
 
-function validateConfig(config) {
+function validateConfig(config, existingConfig = false) {
   record(config, ['version', 'base_branch', 'destinations', 'policy', 'convention_profile'], 'config');
   if (Object.hasOwn(config, 'convention_profile')) { validateProfile(config.convention_profile); }
   requireThat(config.version === 1, 'config.version must be 1');
@@ -67,7 +72,7 @@ function validateConfig(config) {
   requireThat(!base.startsWith('-') && base !== 'HEAD', 'config.base_branch must be a named branch');
   record(config.destinations, DESTINATION_KEYS, 'destinations');
   for (const name of DESTINATION_KEYS) {
-    destination(config.destinations[name], name);
+    destination(config.destinations[name], name, existingConfig);
   }
   if (Object.hasOwn(config, 'policy')) {
     record(config.policy, ['ocr_external'], 'config.policy');
@@ -81,9 +86,9 @@ function validateConfig(config) {
 async function init({ root, store }, args) {
   const existing = await store.read(CONFIG_PATH);
   if (Object.keys(args).length === 0 && existing !== null) {
-    return validateConfig(existing);
+    return validateConfig(existing, true);
   }
-  const config = validateConfig(Object.hasOwn(args, 'config') ? record(args, ['config'], 'init args').config : args);
+  const config = validateConfig(Object.hasOwn(args, 'config') ? record(args, ['config'], 'init args').config : args, existing !== null);
   if (existing !== null) {
     requireThat(store.digest(existing) === store.digest(config), 'config already exists and differs; review changes before replacing it');
     return existing;
@@ -339,7 +344,7 @@ export async function intake(command, context, args) {
   const { store } = context;
   const savedConfig = await store.read(CONFIG_PATH);
   requireThat(savedConfig !== null, 'initialize askill before intake');
-  const config = validateConfig(savedConfig);
+  const config = validateConfig(savedConfig, true);
   const configSha = store.digest(savedConfig);
   switch (command) {
     case 'scope':
