@@ -10,8 +10,6 @@ You need Node.js 22 or later, Git, and GitHub credentials with access to this pr
 npx skills@latest add ayden94/askill --global --skill '*'
 ```
 
-The `askill-init` skill includes the CLI and templates. You do not need to clone askill or install an npm package in your project.
-
 ## Start in a project
 
 1. **Once per Git repository:** ask your agent, “Use `askill-init` to set up this project.” The skill reads manifests and app entry points to select framework and language conventions without a stack questionnaire. It asks only about unclear choices and unresolved issue, PR/MR, or ticket destinations. Local-only work is supported.
@@ -28,6 +26,4 @@ A local lane can finish at the verified commit. Remote publication requires sepa
 
 askill stores configuration, conventions, lane plans, and evidence under `.askill/`. Initialization seeds shared rules plus only the selected framework and language guides. Each language has its own testing guide: a Python API using FastAPI does not get frontend or JavaScript rules. Edit `.askill/convention/` and commit the rules you want implementers and reviewers to share. Initialization preserves existing edits and leaves your Git ignore rules alone.
 
-[CLI reference](skills/askill-init/references/cli.md) · [Workflow and state layout](docs/workflow.md) · [Local example](examples/local/)
-
-To run the test suite from the askill repository: `node --test`.
+[Workflow and state layout](docs/workflow.md) · [Local example](examples/local/)
