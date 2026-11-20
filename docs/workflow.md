@@ -12,6 +12,7 @@ All runtime paths are relative to the target project root, not the askill instal
 | `.askill/issues/<id>.json` | Canonical ordered set of confirmed issue references from registration or read-only intake |
 | `.askill/lanes/<id>/plan.json` | Immutable source-bound plan, dependency reasons, retry policy, and explicit grants |
 | `.askill/lanes/<id>/state.json` | Execution facts, attempt counts, blockers, and references to accepted contracts and reviews |
+| `.askill/lanes/<id>/retro-notes.json`, `retro.json` | Deferred observations and the one lane-end report; neither is execution authority |
 | `.askill/work/<lane-id>/<issue-id>/` | Preflight, exact-head reviews, optional OCR and raw verification evidence |
 
 Git and provider observations decide what currently exists. A ledger or UI status is not proof that a head, PR, or CI run still matches. Scope approval, issue creation, local commits, push, PR creation, merging, and cleanup have separate authorization boundaries.

@@ -3,6 +3,7 @@
 import { lstat, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { conventionIndex } from './conventions.mjs';
+import { retro } from './retro.mjs';
 
 const AXES = ['contract', 'code', 'verification'];
 const GRANTS = ['local_commit', 'push', 'pr_create', 'pr_merge', 'cleanup_command_worktrees'];
@@ -489,6 +490,13 @@ export async function engine(command, context, args) {
   const c = await load(context, args.lane_id, command === 'import-lane');
   if (command === 'import-lane') { return c.state; }
   const one = planner(c);
+  if (['retro-note', 'retro-plan', 'record-retro'].includes(command)) {
+    return retro(command, c, args, async () => {
+      const observations = [];
+      for (const issue of c.plan.confirmed_issues) { observations.push(await one(issue)); }
+      return observations;
+    });
+  }
   if (command === 'plan-all') {
     const rows = [];
     for (const issue of c.plan.confirmed_issues) { rows.push((await one(issue)).plan); }

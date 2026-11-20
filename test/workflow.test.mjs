@@ -94,6 +94,14 @@ test('local lane: fix-back and restart -> only three current-head verdicts compl
   call('import-lane', { lane_id });
   assert.deepEqual(readdirSync(join(root, '.askill/lanes', lane_id)).sort(), ['plan.json', 'state.json']);
   assert.ok(!readdirSync(join(root, '.askill')).includes('lanes-v4'));
+  assert.equal(call('retro-plan', { lane_id }).action, 'wait-lane');
+  const deferred = {
+    kind: 'convention-change', title: 'Test empty inputs on calculator changes',
+    evidence: 'The original check only covered nonempty inputs.',
+    next_step: 'Propose an empty-input rule in .askill/convention/testing.md.',
+  };
+  call('retro-note', { lane_id, issue, ...deferred });
+  call('retro-note', { lane_id, issue, ...deferred });
   const before = call('plan', target);
   assert.equal(before.action, 'preflight');
   assert.deepEqual(before.convention, {
@@ -163,4 +171,18 @@ test('local lane: fix-back and restart -> only three current-head verdicts compl
   assert.equal(completed.head_sha, git(worktree, ['rev-parse', 'HEAD']));
   assert.equal(call('plan', target).action, 'done');
   assert.equal(git(root, ['remote']), '');
+
+  const retrospective = call('retro-plan', { lane_id });
+  assert.equal(retrospective.action, 'retro');
+  assert.equal(retrospective.notes.length, 1);
+  assert.equal(retrospective.outcomes[0].head_sha, completed.head_sha);
+  const reportInput = {
+    lane_id, basis_sha256: retrospective.basis_sha256, summary: 'The lane preserved empty-input behavior.',
+    recommendations: [deferred],
+  };
+  const recorded = call('record-retro', reportInput);
+  assert.deepEqual(call('record-retro', reportInput), recorded);
+  assert.deepEqual(call('retro-plan', { lane_id }), recorded);
+  assert.notEqual(invoke('record-retro', { ...reportInput, summary: 'Changed' }).status, 0);
+  assert.equal(call('plan', target).action, 'done');
 });

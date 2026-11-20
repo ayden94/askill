@@ -215,7 +215,7 @@ test('plan: fresh PR lifecycle and CI -> preserve failure, waiting, approval and
     head: plan.head_sha, state: 'OPEN', mergeable: 'UNKNOWN', ci: 'unknown' };
   for (const axis of axes) { await call('record', verdict(plan, axis)); }
   assert.equal((await call('plan')).action, 'create-pr');
-  forge.observePR = async () => ({ ...pr });
+  forge.observePR = async (_destination, { branch }) => branch === plan.branch ? { ...pr } : null;
   pr.head = plan.base_sha;
   assert.equal((await call('plan')).action, 'push');
   pr.head = plan.head_sha;
@@ -230,6 +230,10 @@ test('plan: fresh PR lifecycle and CI -> preserve failure, waiting, approval and
   assert.equal((await call('plan')).action, 'wait-mergeability');
   pr.mergeable = 'MERGEABLE';
   assert.equal((await call('plan')).action, 'request-merge-approval');
+  const priorToMerge = await call('retro-plan');
+  assert.equal(priorToMerge.action, 'wait-lane');
+  assert.equal(priorToMerge.pending.find(({ issue }) => issue === 'X').action, 'request-merge-approval');
+  await assert.rejects(call('record-retro', { lane_id: 'jobs' }), /after all lane issues are done/u);
   pr.state = 'CLOSED';
   assert.equal((await call('plan')).reason, 'pr-closed-externally');
   pr.state = 'MERGED';
@@ -237,4 +241,12 @@ test('plan: fresh PR lifecycle and CI -> preserve failure, waiting, approval and
   const merged = await call('plan');
 
   assert.equal(merged.reason, 'merged-pr');
+  assert.equal((await call('retro-plan')).action, 'wait-lane');
+  forge.observePR = async (_destination, { branch }) => branch === plan.branch ? { ...pr } : ({
+    ...pr, id: '8', url: 'https://example.invalid/pr/8', branch,
+  });
+  const ready = await call('retro-plan');
+  assert.equal(ready.action, 'retro');
+  assert.deepEqual(ready.outcomes.map(({ pr_url }) => pr_url),
+    ['https://example.invalid/pr/7', 'https://example.invalid/pr/8']);
 });

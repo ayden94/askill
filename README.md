@@ -3,8 +3,9 @@
 이슈 하나 또는 여러 개를 **lane**으로 묶어 구현하고, 같은 커밋을 기준으로 검증하는 CLI와 에이전트 스킬이에요. 특정 에이전트 호스트나 GitHub에 묶이지 않아서 로컬 Git 저장소만으로도 시작할 수 있어요.
 
 ```text
-프로젝트 설정 → 범위 합의 → 이슈 등록 → lane 생성
-  → 이슈별 preflight → 구현 → 3축 리뷰 → 필요 시 PR/MR
+최초 1회: 프로젝트 설정
+lane마다: 범위 합의 → 이슈 등록 → lane 생성
+  → 이슈별 preflight → 구현 → 3축 리뷰 → 필요 시 PR/MR → lane 회고
 ```
 
 ## 빠른 시작
@@ -18,7 +19,11 @@ node src/cli.mjs --help
 
 target=/absolute/path/to/your-repo
 node src/cli.mjs init --root "$target" --input examples/local/config.json
+```
 
+같은 프로젝트에서는 초기화를 반복할 필요가 없어요. 이후 새 lane은 범위 합의부터 시작하세요.
+
+```bash
 printf '%s\n' '{"intake_id":"save","problem":"저장 중 중복 요청이 나간다","drafts":[{"draft_id":"prevent-duplicate","title":"중복 저장 방지"}]}' |
   node src/cli.mjs scope --root "$target" --input -
 printf '%s\n' '{"artifact_id":"save","intake_id":"save"}' |
@@ -43,7 +48,9 @@ printf '%s\n' '{"lane_id":"save"}' |
 ├── issues/                   # 확인된 이슈 목록
 ├── lanes/<lane-id>/
 │   ├── plan.json             # 이슈 구성·의존성·실행 권한
-│   └── state.json            # 실행 상태·재시도·검증 기록 참조
+│   ├── state.json            # 실행 상태·재시도·검증 기록 참조
+│   ├── retro-notes.json      # 작업 중 남긴 후속 후보
+│   └── retro.json            # lane 종료 후 저장한 회고와 추천
 └── work/                     # 이슈별 계약과 검증 근거
 ```
 
@@ -56,6 +63,7 @@ printf '%s\n' '{"lane_id":"save"}' |
 - **Preflight:** 무엇을 바꾸고 유지할지, 무엇을 관찰해야 완료인지 합의해요. 프로젝트 문서가 없는 경우에도 시작할 수 있어요.
 - **3축 리뷰:** 독립 리뷰어가 같은 커밋에서 계약 충족, 코드 품질과 컨벤션 준수, 검증 근거를 확인해요. 수정해서 커밋이 바뀌면 이전 판정을 재사용하지 않아요.
 - **선택 도구:** Open Code Review(`ocr`)는 설치되어 있고 diff 전송 권한이 있을 때만 추가로 실행해요. 원격 이슈나 PR/MR이 필요할 때만 `gh` 또는 `glab`을 사용해요. 머지와 정리는 호스트가 별도 권한으로 처리하고, 티켓은 목적지만 설정해요.
+- **Lane 회고:** 모든 이슈가 끝나면 한 번만 진행해요. 범위 밖 문제는 후속 이슈로, 반복해서 막힌 검증은 테스트·컨벤션 개선으로 추천할 수 있어요. 실제 등록이나 규칙 수정은 별도 요청이 있을 때만 해요.
 
 [워크플로 계약](docs/workflow.md) · [Fluo에서 가져온 구조](docs/fluo-port.md) · [로컬 예시](examples/local/)
 

@@ -4,6 +4,8 @@ Use `node /path/to/askill/src/cli.mjs` or the `askill` package binary in an envi
 
 ## Intake and planning
 
+Run `init` once for each project. Start subsequent lanes with `scope` or with existing issues; do not reinitialize project settings as part of every lane.
+
 | Command | JSON input |
 |---|---|
 | `init` | The project config (see the [local example](../examples/local/config.json)) |
@@ -34,6 +36,16 @@ Import with `import-lane` and `{"lane_id":"…"}`. The immutable `plan.json` and
 The binding is `{lane_id, issue, base_sha, head_sha, contract_sha256}`. `record` rejects stale results rather than relabeling them. Use `run-ocr` with the same binding; transmitting the diff requires both project policy `policy.ocr_external: true` and explicit `authorized: true`. Missing OCR is a recorded skip, not a reason to install software. The coordinator calls this during the review stage, before concluding the lane. It confirms any actionable candidate in the checkout rather than treating OCR text as a verdict.
 
 Merge and cleanup are explicit host handoffs, not CLI mutations. A host with a current grant carries out the indicated action only after rechecking the observed head, CI and mergeability or the registered clean worktree identity, as applicable. Replan after the host observes the real result. For a local dependency, integrate the verified prerequisite commit into the configured base before dispatching the dependent issue.
+
+## Lane retrospective
+
+| Command | JSON input and outcome |
+|---|---|
+| `retro-note` | `lane_id`, optional `issue`, and one candidate `{kind, title, evidence, next_step}`. Notes survive coordinator restarts and identical notes are deduplicated. |
+| `retro-plan` | `lane_id`. Returns `wait-lane` with unfinished issues, `retro` with evidence and the current `basis_sha256`, or `done` with the previously saved report. |
+| `record-retro` | `lane_id`, `basis_sha256` from `retro-plan`, `summary`, and `recommendations` (possibly empty). Only accepts a fresh completed-lane basis; replays of the same report are safe. |
+
+Candidate kinds are `follow-up-issue` and `convention-change`. Local lanes may finish with verified local heads; for PR/MR work, publishing alone does not make an issue done. The host runs one retrospective after all lane issues reach terminal `done`. Recommendations do not create issues, edit conventions, or change a lane's execution state.
 
 ## Independent agents
 

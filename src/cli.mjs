@@ -8,8 +8,9 @@ import { intake } from './intake.mjs';
 import { openStore, projectRoot } from './store.mjs';
 
 const intakeCommands = new Set(['init', 'scope', 'issues', 'create-lane']);
-const engineCommands = new Set(['import-lane', 'plan', 'plan-all', 'record', 'run-ocr', 'publish-pr']);
-const readOnlyCommands = new Set(['plan', 'plan-all']);
+const engineCommands = new Set(['import-lane', 'plan', 'plan-all', 'record', 'run-ocr', 'publish-pr',
+  'retro-note', 'retro-plan', 'record-retro']);
+const readOnlyCommands = new Set(['plan', 'plan-all', 'retro-plan']);
 
 function print(value) {
   process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
